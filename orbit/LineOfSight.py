@@ -8,9 +8,10 @@ def ecef_los_to_levation(dx, dy, dz, lat_deg, lon_deg):
     slat, clat = sin(lat), cos(lat)
     slon, clon = sin(lon), cos(lon)
 
-    e = -slon * dx + clon*dy
-    n = -slat*clon*dx - slat*slon*dy + clat*dz
-    u =  clat*clon*dx + clat*slon*dy + slat*dz
+    e = -slon * dx + clon * dy
+    n = -clon*slat * dx - slon*slat * dy + clat * dz
+    u=  clon*clat * dx + slon*clat * dy + slat * dz
+
 
     horiz = sqrt(e*e + n*n)
     elev_rad = atan2(u, horiz)

@@ -1,6 +1,6 @@
 from orbit.gstime_vallado import gstime_vallado
 from math import cos, sin
-from sgp4.functions import jday
+
 
 
 def teme_to_ecef(r_teme, jd, fr):
