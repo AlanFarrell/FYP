@@ -19,7 +19,7 @@ def coverage_time():
 
 
 
-    duration_hours = 24
+    duration_hours = 4
     step_frequency = 30 #recheck satellite propagation every x seconds
     total_coverage = 0
     count_windows = 0
