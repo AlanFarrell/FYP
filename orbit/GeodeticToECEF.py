@@ -1,6 +1,6 @@
 from math import sin, cos, sqrt, atan2, radians, degrees, fmod, pi
 
-def latlonToCartesian(lat_deg, lon_deg, alt_m = 0.0):
+def LatLonToECEF(lat_deg, lon_deg, alt_m = 0.0):
     a = 6378137.0  # WGS84 equatorial radius
     f = 1/298.257223563
     e2 = f*(2-f)

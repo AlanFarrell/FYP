@@ -1,8 +1,15 @@
-from orbit.propogate import satellite_positions
+from orbit.VisibilityWindow import coverage_time
 
 def main():
-    sats = satellite_positions()
+    coverage = coverage_time()
 
+    print("Coverage windows:")
+    for ws, we in coverage["windows"]:
+        print(f" - ({ws.strftime('%H:%M:%S')}, {we.strftime('%H:%M:%S')})")
+
+    print("Total coverage(mins):", coverage["total(mins)"])
+    print("Average window of coverage(mins):", coverage["avg_coverage(mins)"])
+    print("Coverage time %:", coverage["coverage_percent"])
 
 if __name__ == "__main__":
     main()
