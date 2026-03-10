@@ -1,6 +1,5 @@
 from sgp4.api import Satrec, jday
 from datetime import datetime, timezone
-import requests
 from orbit.isVisible import is_visible
 from orbit.BeamWidth import BeamFilter
 
@@ -8,6 +7,7 @@ def satellite_positions(when_utc=None, lines=None):
 
     beamwidthDeg = 30.0
     alt_m = 0.0
+
     visible_count = 0
     dtc_visible = 0
 

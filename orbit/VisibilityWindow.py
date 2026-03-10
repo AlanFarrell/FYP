@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from orbit.propogate import satellite_positions
 import requests
+import os
 
 
 def coverage_time():
@@ -12,15 +13,15 @@ def coverage_time():
         lines = response.text.strip().split("\n")
     except Exception as e:
         print(f"[Error]: TLE download failed: {e}, using local backup ")
-        with open("starlink.tle", "r") as f:
+        here = os.path.dirname(os.path.abspath(__file__))   # <-- path to /orbit
+        tle_path = os.path.join(here, "starlink.tle")       # <-- /orbit/starlink.tle
+        with open(tle_path, "r") as f:
             lines = f.read().strip().split("\n")
 
 
 
-
-
-    duration_hours = 4
-    step_frequency = 30 #recheck satellite propagation every x seconds
+    duration_hours = 1
+    step_frequency = 1 #recheck satellite propagation every x seconds
     total_coverage = 0
     count_windows = 0
     average_coverage = 0
