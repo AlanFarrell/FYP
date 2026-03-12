@@ -1,27 +1,12 @@
 from datetime import datetime, timedelta, timezone
-from orbit.propogate import satellite_positions
-import requests
-import os
+from orbit.propagate import satellite_positions
 
 
-def coverage_time():
-    tle_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
-
-    try:
-        response = requests.get(tle_url, timeout=8)
-        response.raise_for_status()
-        lines = response.text.strip().split("\n")
-    except Exception as e:
-        print(f"[Error]: TLE download failed: {e}, using local backup ")
-        here = os.path.dirname(os.path.abspath(__file__))   # <-- path to /orbit
-        tle_path = os.path.join(here, "starlink.tle")       # <-- /orbit/starlink.tle
-        with open(tle_path, "r") as f:
-            lines = f.read().strip().split("\n")
-
+def coverage_time(obs_lat, obs_lon, lines):
 
 
     duration_hours = 1
-    step_frequency = 1 #recheck satellite propagation every x seconds
+    step_frequency = 60 #recheck satellite propagation every x seconds
     total_coverage = 0
     count_windows = 0
     average_coverage = 0
@@ -44,7 +29,15 @@ def coverage_time():
     time = start
 
     while time <= end:
-        filtered, best = satellite_positions(when_utc=time, lines=lines)
+        filtered, best = satellite_positions(
+            when_utc=time,
+            lines=lines,
+            obs_lat=obs_lat,
+            obs_lon=obs_lon,
+            verbose=False
+            )
+
+
         coverage_available = len(filtered) > 0
 
         if coverage_available and not in_coverage:

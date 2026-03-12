@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from orbit.isVisible import is_visible
 from orbit.BeamWidth import BeamFilter
 
-def satellite_positions(when_utc=None, lines=None):
+def satellite_positions(when_utc=None, lines=None, obs_lat=None, obs_lon=None, verbose=True):
 
     beamwidthDeg = 30.0
     alt_m = 0.0
@@ -11,12 +11,15 @@ def satellite_positions(when_utc=None, lines=None):
     visible_count = 0
     dtc_visible = 0
 
-    OBSERVER_SITES = [
-        ("Kells", 53.727508, -6.878310)
-    ]
+
+    if obs_lat is None or obs_lon is None:
+        OBSERVER_SITES = [("Kells", 53.727508, -6.878310)]
+        obs_name, obs_lat, obs_lon = OBSERVER_SITES[0]
+    else:
+        obs_name ="custom"
 
     unique_visible = {}
-    obs_name, obs_lat, obs_lon = OBSERVER_SITES[0]
+
 
 
     #=====Finding  Julian date =====
@@ -67,9 +70,10 @@ def satellite_positions(when_utc=None, lines=None):
             print("  -", s["name"])
 
 
-
+    print(f"Checking at lat lon: {obs_lat}, {obs_lon}")
     print(f"Total visible DTC (LoS only): {dtc_visible}")
     print(f"Total in-beam: {len(filtered)}")
     print(f"Optimal Satellite: {best}")
+    print(" ")
 
     return filtered, best
