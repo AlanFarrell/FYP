@@ -7,10 +7,9 @@ def satellite_positions(when_utc=None, lines=None, obs_lat=None, obs_lon=None, v
 
     beamwidthDeg = 30.0
     alt_m = 0.0
-
     visible_count = 0
     dtc_visible = 0
-
+    unique_visible = {}
 
     if obs_lat is None or obs_lon is None:
         OBSERVER_SITES = [("Kells", 53.727508, -6.878310)]
@@ -18,12 +17,9 @@ def satellite_positions(when_utc=None, lines=None, obs_lat=None, obs_lon=None, v
     else:
         obs_name ="custom"
 
-    unique_visible = {}
-
 
 
     #=====Finding  Julian date =====
-
     t = when_utc if when_utc is not None else datetime.now(timezone.utc)
     jd, fr = jday(t.year, t.month, t.day,
                   t.hour, t.minute, t.second + t.microsecond / 1e6)
@@ -64,16 +60,19 @@ def satellite_positions(when_utc=None, lines=None, obs_lat=None, obs_lon=None, v
         if "DTC" in name:
             dtc_visible += 1
 
-    if filtered:
+    if verbose and filtered:
         print("[summary] Satellites with viable Beamwidth (at a time instant):")
         for s in sorted(filtered, key=lambda item: item["name"]):
             print("  -", s["name"])
 
+    if verbose:
+        print(f"Checking at lat lon: {obs_lat}, {obs_lon}")
+        print(f"Total visible DTC (LoS only): {dtc_visible}")
+        print(f"Total in-beam: {len(filtered)}")
+        print(f"Optimal Satellite: {best}")
+        print(" ")
 
-    print(f"Checking at lat lon: {obs_lat}, {obs_lon}")
-    print(f"Total visible DTC (LoS only): {dtc_visible}")
-    print(f"Total in-beam: {len(filtered)}")
-    print(f"Optimal Satellite: {best}")
-    print(" ")
+
+
 
     return filtered, best

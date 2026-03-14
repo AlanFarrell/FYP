@@ -44,7 +44,7 @@ def coverage_map():
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
             print(f"Checking coverage at {lat}, {lon}")
-            result = coverage_time(obs_lat=lat, obs_lon=lon, lines=lines)
+            result = coverage_time(obs_lat=lat, obs_lon=lon, lines=lines, dtc_only =True, verbose=True)
             grid[i, j] = result["coverage_percent"]
 
     plt.figure(figsize=(10, 8))
@@ -54,13 +54,13 @@ def coverage_map():
 
     ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
 
-    # Add map features
+    
     ax.coastlines(resolution="10m", color="black", linewidth=1)
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
 
-    # Plot the coverage grid ON the map
+
     img = ax.imshow(
         grid,
         origin="lower",
@@ -71,7 +71,7 @@ def coverage_map():
         alpha=0.75
     )
 
-    # Colorbar
+
     plt.colorbar(img, ax=ax, label="Coverage %")
 
     plt.title("Coverage Percentage Map Over Ireland")

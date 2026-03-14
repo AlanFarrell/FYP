@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from orbit.propagate import satellite_positions
 
 
-def coverage_time(obs_lat, obs_lon, lines):
+def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
 
 
     duration_hours = 1
@@ -38,6 +38,22 @@ def coverage_time(obs_lat, obs_lon, lines):
             )
 
 
+
+        if dtc_only:
+            filtered = [s for s in filtered if "DTC" in s["name"].upper()]
+        if verbose:
+            if dtc_only:
+                print("[summary] Satellites with viable Beamwidth (DTC only):")
+            else:
+                print("[summary] Satellites with viable Beamwidth (at a time instant):")
+            if filtered:
+                for s in sorted(filtered, key=lambda x: x["name"]):
+                    print(f"  - {s['name']}")
+            else:
+                print("  (none)")
+            print(f"Time: {time.strftime('%H:%M:%S')} | lat lon: {obs_lat:.4f}, {obs_lon:.4f}")
+            print()
+
         coverage_available = len(filtered) > 0
 
         if coverage_available and not in_coverage:
@@ -51,20 +67,27 @@ def coverage_time(obs_lat, obs_lon, lines):
         last_time = time
         time += dt
 
+
     if in_coverage and window_start:
         coverage_windows.append((window_start, last_time))
 
-    for(start, end) in coverage_windows:
+    total_coverage = 0.0
+    count_windows = 0
+
+    for (start, end) in coverage_windows:
         duration = (end - start).total_seconds()
         total_coverage += duration
         count_windows += 1
 
     if count_windows > 0:
         avg_coverage = total_coverage / count_windows
+    else:
+        avg_coverage = 0.0
 
-        coverage_percent = (total_coverage / (duration_hours*3600)) * 100
-        total_coverage = total_coverage/60
-        average_coverage = avg_coverage/60
+    coverage_percent = (total_coverage / (duration_hours * 3600.0)) * 100.0
+    total_coverage = total_coverage / 60.0
+    average_coverage = avg_coverage / 60.0
+
 
     return {
         "windows" : coverage_windows,
