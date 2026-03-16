@@ -9,8 +9,6 @@ import requests
 import os
 
 
-
-
 def coverage_map():
     tle_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
     try:
@@ -23,10 +21,6 @@ def coverage_map():
         tle_path = os.path.join(here, "..", "orbit", "starlink.tle")
         with open(tle_path, "r") as f:
             lines = f.read().strip().split("\n")
-
-
-
-
 
     lat_min, lat_max = 51.3, 56.0
     lon_min, lon_max = -10.7, -5.5

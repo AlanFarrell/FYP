@@ -5,11 +5,8 @@ from orbit.propagate import satellite_positions
 def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
 
 
-    duration_hours = 1
-    step_frequency = 60 #recheck satellite propagation every x seconds
-    total_coverage = 0
-    count_windows = 0
-    average_coverage = 0
+    duration_hours = 24
+    step_frequency = 10
 
     start = datetime.now(timezone.utc)
     end = start + timedelta(hours=duration_hours)
