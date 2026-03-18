@@ -1,7 +1,7 @@
-from orbit.GeodeticToECEF import LatLonToECEF
-from orbit.TEMEtoECEF import teme_to_ecef
-from orbit.LineOfSight import ecef_los_to_levation
-from orbit.LineOfSight import MASK_ANGLE_DEG
+from orbit.HelperFucntions.GeodeticToECEF import LatLonToECEF
+from orbit.HelperFucntions.TEMEtoECEF import teme_to_ecef
+from orbit.HelperFucntions.LineOfSight import ecef_los_to_levation
+from orbit.HelperFucntions.LineOfSight import MASK_ANGLE_DEG
 
 def is_visible(r_teme, jd, fr, lat, lon, alt_m = 0.0):
 

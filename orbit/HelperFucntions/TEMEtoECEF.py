@@ -1,4 +1,4 @@
-from orbit.gstime_vallado import gstime_vallado
+from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 from math import cos, sin
 
 

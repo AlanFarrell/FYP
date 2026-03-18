@@ -1,26 +1,25 @@
 import numpy as np
 from math import degrees, acos
-from orbit.GeodeticToECEF import LatLonToECEF
-from orbit.gstime_vallado import gstime_vallado
+from orbit.HelperFucntions.GeodeticToECEF import LatLonToECEF
+from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 
 def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
-    #define beanwidht parameters
-    half_angle =beamwidth_deg/2
+    half_angle = beamwidth_deg/2
     kept = []
 
     #convert observer LatLon to ECEF then TEME
-    obs_ecef = np.array(LatLonToECEF(obs_lat, obs_lon, obs_alt))
+    observer_ecef = np.array(LatLonToECEF(obs_lat, obs_lon, obs_alt))
     gmst = gstime_vallado(jd + fr)
 
     ct, st = np.cos(gmst), np.sin(gmst)
 
     rotation_matrix = np.array([
-        [ct, -st, 0.0],
-        [st, ct, 0.0],
+        [ct, st, 0.0],
+        [-st, ct, 0.0],
         [0.0, 0.0, 1.0]
     ])
 
-    obs_teme = rotation_matrix @ obs_ecef
+    observer_teme = rotation_matrix @ observer_ecef
 
     for sat in sats:
         sat_eci = np.array(sat["position_km"], dtype=float)
@@ -28,7 +27,7 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
         #unit verctor pointing from satellite to earths center
         u_beam = -sat_eci/np.linalg.norm(sat_eci)
         #Line of sight vector
-        v_los = obs_teme - sat_eci
+        v_los = observer_teme - sat_eci
         #unit LOS
         u_los = v_los / np.linalg.norm(v_los)
         cosang = np.dot(u_beam, u_los)
