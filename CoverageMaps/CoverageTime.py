@@ -5,29 +5,18 @@ import matplotlib
 matplotlib.use("TkAgg")
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-import requests
-import os
+from orbit.HelperFucntions.PullTLEs import get_starlink_tles
 
 
 def coverage_map():
-    tle_url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
-    try:
-        response = requests.get(tle_url, timeout=8)
-        response.raise_for_status()
-        lines = response.text.strip().split("\n")
-    except Exception as e:
-        print(f"[Error]: TLE download failed: {e}, using local backup ")
-        here = os.path.dirname(os.path.abspath(__file__))   # <-- path to /orbit
-        tle_path = os.path.join(here, "..", "orbit", "starlink.tle")
-        with open(tle_path, "r") as f:
-            lines = f.read().strip().split("\n")
+    TLEdata = get_starlink_tles()
 
     lat_min, lat_max = 51.3, 56.0
     lon_min, lon_max = -10.7, -5.5
-    lat_step, lon_step = 0.1, 0.1
+    step = 2
 
-    lats = np.arange(lat_min, lat_max, lat_step)
-    lons = np.arange(lon_min, lon_max, lon_step)
+    lats = np.arange(lat_min, lat_max, step)
+    lons = np.arange(lon_min, lon_max, step)
 
     grid = np.zeros((len(lats), len(lons)))
 
@@ -38,22 +27,21 @@ def coverage_map():
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
             print(f"Checking coverage at {lat}, {lon}")
-            result = coverage_time(obs_lat=lat, obs_lon=lon, lines=lines, dtc_only =True, verbose=True)
+            result = coverage_time(obs_lat=lat, obs_lon=lon, lines=TLEdata, dtc_only =True, verbose=True)
             grid[i, j] = result["coverage_percent"]
+
+
 
     plt.figure(figsize=(10, 8))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
 
-
     ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
 
-    
     ax.coastlines(resolution="10m", color="black", linewidth=1)
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
-
 
     img = ax.imshow(
         grid,
@@ -64,7 +52,6 @@ def coverage_map():
         transform=ccrs.PlateCarree(),
         alpha=0.75
     )
-
 
     plt.colorbar(img, ax=ax, label="Coverage %")
 

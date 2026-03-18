@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
+
 from orbit.propagate import satellite_positions
 
 
 def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
 
 
-    duration_hours = 24
-    step_frequency = 10
+    duration_hours = 2
+    step_frequency = 30
+    total_coverage = 0.0
+    count_windows = 0
 
     start = datetime.now(timezone.utc)
     end = start + timedelta(hours=duration_hours)
@@ -19,14 +23,11 @@ def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
     in_coverage = False
     window_start = None
     coverage_windows = []
-    last_time = start
-
-
 
     time = start
 
     while time <= end:
-        filtered, best = satellite_positions(
+        filtered_satellites, optimal_satellite = satellite_positions(
             when_utc=time,
             lines=lines,
             obs_lat=obs_lat,
@@ -34,24 +35,9 @@ def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
             verbose=False
             )
 
-
-
         if dtc_only:
-            filtered = [s for s in filtered if "DTC" in s["name"].upper()]
-        if verbose:
-            if dtc_only:
-                print("[summary] Satellites with viable Beamwidth (DTC only):")
-            else:
-                print("[summary] Satellites with viable Beamwidth (at a time instant):")
-            if filtered:
-                for s in sorted(filtered, key=lambda x: x["name"]):
-                    print(f"  - {s['name']}")
-            else:
-                print("  (none)")
-            print(f"Time: {time.strftime('%H:%M:%S')} | lat lon: {obs_lat:.4f}, {obs_lon:.4f}")
-            print()
-
-        coverage_available = len(filtered) > 0
+            filtered_satellites = dtc_filter(filtered_satellites)
+        coverage_available = len(filtered_satellites) > 0
 
         if coverage_available and not in_coverage:
             in_coverage = True
@@ -64,13 +50,23 @@ def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
         last_time = time
         time += dt
 
-
     if in_coverage and window_start:
         coverage_windows.append((window_start, last_time))
 
-    total_coverage = 0.0
-    count_windows = 0
+    average_coverage, coverage_percent, total_coverage = compute_coverage_stats(count_windows, coverage_windows,
+                                                                                duration_hours, total_coverage)
 
+    return {
+        "windows" : coverage_windows,
+        "total(mins)" : total_coverage,
+        "avg_coverage(mins)" : average_coverage,
+        "coverage_percent" : coverage_percent,
+    }
+
+
+
+def compute_coverage_stats(count_windows: int, coverage_windows: list[Any], duration_hours: int,
+                           total_coverage: float) -> tuple[float, float, float]:
     for (start, end) in coverage_windows:
         duration = (end - start).total_seconds()
         total_coverage += duration
@@ -84,11 +80,10 @@ def coverage_time(obs_lat, obs_lon, lines, dtc_only=False, verbose=False):
     coverage_percent = (total_coverage / (duration_hours * 3600.0)) * 100.0
     total_coverage = total_coverage / 60.0
     average_coverage = avg_coverage / 60.0
+    return average_coverage, coverage_percent, total_coverage
 
 
-    return {
-        "windows" : coverage_windows,
-        "total(mins)" : total_coverage,
-        "avg_coverage(mins)" : average_coverage,
-        "coverage_percent" : coverage_percent,
-    }
+
+def dtc_filter(filtered_satellites):
+    return [s for s in filtered_satellites if "DTC" in s["name"].upper()]
+

@@ -3,76 +3,85 @@ from datetime import datetime, timezone
 from orbit.isVisible import is_visible
 from orbit.BeamWidth import BeamFilter
 
-def satellite_positions(when_utc=None, lines=None, obs_lat=None, obs_lon=None, verbose=True):
+def satellite_positions(
+                        when_utc=None,
+                        lines=None,
+                        obs_lat=None,
+                        obs_lon=None,
+                        verbose=True):
 
     beamwidthDeg = 30.0
-    alt_m = 0.0
-    visible_count = 0
-    dtc_visible = 0
-    unique_visible = {}
-
-    if obs_lat is None or obs_lon is None:
-        OBSERVER_SITES = [("Kells", 53.727508, -6.878310)]
-        obs_name, obs_lat, obs_lon = OBSERVER_SITES[0]
-    else:
-        obs_name ="custom"
-
-
+    altitude_m = 0.0
+    dtc_visible_count = 0
 
     #=====Finding  Julian date =====
-    t = when_utc if when_utc is not None else datetime.now(timezone.utc)
-    jd, fr = jday(t.year, t.month, t.day,
-                  t.hour, t.minute, t.second + t.microsecond / 1e6)
+    jd, fr = jday(
+        when_utc.year,
+        when_utc.month,
+        when_utc.day,
+        when_utc.hour,
+        when_utc.minute,
+        when_utc.second + when_utc.microsecond / 1e6
+    )
 
-    # ---- loop through all Starlink TLEs ----
-    for i in range(0, len(lines) - 2, 3):
-        name = lines[i].strip()
-        line1 = lines[i + 1].strip()
-        line2 = lines[i + 2].strip()
+    visible_satellites, dtc_visible = propagate_visible_satellites(
+        lines, jd, fr, obs_lat, obs_lon
+    )
 
-        satellite = Satrec.twoline2rv(line1, line2)
-        e, r, v = satellite.sgp4(jd, fr)
-        if e != 0:
-            continue
+    filtered_satellites, optimal_satellites = BeamFilter(
+        visible_satellites,
+        jd,
+        fr,
+        obs_lat,
+        obs_lon,
+        altitude_m,
+        beamwidthDeg
+    )
 
-    #=====Line of sight test  el >10 Degrees above horizon======
-        ok, elev = is_visible(r, jd, fr, obs_lat, obs_lon, alt_m)
-        if not ok:
-            continue
-
-        visible_count += 1
-
-        unique_visible[name] = {
-            "name": name,
-            "position_km": r,
-            "velocity": v,
-            "error": e
-        }
-
-    satellite_positions = list(unique_visible.values())
-
-    #=====Apply beamwidth filter =====
-    filtered, best = BeamFilter(satellite_positions, jd, fr, obs_lat, obs_lon, alt_m,beamwidthDeg)
-
-
-   #DTC count
-    for name in unique_visible:
-        if "DTC" in name:
-            dtc_visible += 1
-
-    if verbose and filtered:
+    if verbose:
         print("[summary] Satellites with viable Beamwidth (at a time instant):")
-        for s in sorted(filtered, key=lambda item: item["name"]):
+        for s in sorted(filtered_satellites, key=lambda item: item["name"]):
             print("  -", s["name"])
 
     if verbose:
         print(f"Checking at lat lon: {obs_lat}, {obs_lon}")
-        print(f"Total visible DTC (LoS only): {dtc_visible}")
-        print(f"Total in-beam: {len(filtered)}")
-        print(f"Optimal Satellite: {best}")
+        print(f"Total visible DTC (LoS only): {dtc_visible_count}")
+        print(f"Total in-beam: {len(filtered_satellites)}")
+        print(f"Optimal Satellite: {optimal_satellites}")
         print(" ")
 
+    return filtered_satellites, optimal_satellites
 
 
 
-    return filtered, best
+
+
+def propagate_visible_satellites(lines, jd, fr, obs_lat, obs_lon, observer_alt=0.0):
+    visible = []
+    dtc_count = 0
+
+    for i in range(0, len(lines), 3):
+        name = lines[i].strip()
+        line1 = lines[i + 1].strip()
+        line2 = lines[i + 2].strip()
+
+        sat = Satrec.twoline2rv(line1, line2)
+        e, r, v = sat.sgp4(jd, fr)
+        if e != 0:
+            continue
+
+        ok, elev_deg = is_visible(r, jd, fr, obs_lat, obs_lon, observer_alt)
+        if not ok:
+            continue
+
+        if "DTC" in name.upper():
+            dtc_count += 1
+
+        visible.append({
+            "name": name,
+            "position_km": r,
+            "velocity_km_s": v,
+            "elevation_deg": elev_deg,
+        })
+
+    return visible, dtc_count
