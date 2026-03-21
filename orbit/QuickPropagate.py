@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from orbit.HelperFucntions.DTCfilter import is_DTC
 
 
-def quickPropagate(lines, duration, step, use_dtc_only = False):
+def quickPropagate(lines, duration, step):
     """
        Propagate all satellites from TLEs for 24 hours ahead.
        Returns a dictionary:
@@ -23,8 +23,6 @@ def quickPropagate(lines, duration, step, use_dtc_only = False):
         name = lines[i].strip()
         line1 = lines[i + 1].strip()
         line2 = lines[i + 2].strip()
-
-
         satellites.append((name, Satrec.twoline2rv(line1, line2)))
 
 

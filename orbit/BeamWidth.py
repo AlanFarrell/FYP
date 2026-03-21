@@ -14,8 +14,8 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
     ct, st = np.cos(gmst), np.sin(gmst)
 
     rotation_matrix = np.array([
-        [ct, st, 0.0],
-        [-st, ct, 0.0],
+        [ct, -st, 0.0],
+        [st, ct, 0.0],
         [0.0, 0.0, 1.0]
     ])
 

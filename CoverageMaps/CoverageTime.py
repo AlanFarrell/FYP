@@ -11,10 +11,10 @@ from orbit.QuickPropagate import quickPropagate
 def coverage_map():
     lat_min, lat_max = 51.3, 56.0
     lon_min, lon_max = -10.7, -5.5
-    TimeStep = 60
+    TimeStep = 20
     LatLonStep = 1
     TLEdata = get_starlink_tles()
-    propagated_data = quickPropagate(TLEdata, 3, TimeStep, use_dtc_only=True)
+    propagated_data = quickPropagate(TLEdata, 2, TimeStep)
 
     lats = np.arange(lat_min, lat_max, LatLonStep)
     lons = np.arange(lon_min, lon_max, LatLonStep)
@@ -29,8 +29,6 @@ def coverage_map():
             print(f"Checking coverage at {lat}, {lon}")
             stats = checkForCoverage(lat, lon, propagated_data)
             grid[i, j] = stats["coverage_percent"]
-
-
 
 
     plt.figure(figsize=(10, 8))
