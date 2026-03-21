@@ -1,8 +1,8 @@
-from CoverageMaps.CoverageTime import coverage_map
+from CoverageMaps.CoverageTime import coverage_mapping
 
 def main():
 
-    coverage_map()
+    coverage_mapping()
 
 if __name__ == "__main__":
     main()

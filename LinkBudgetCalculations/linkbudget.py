@@ -1,67 +1,76 @@
 import math
 from dataclasses import dataclass
-import numpy as np
-from math import log10
 
 
-def linkbudget(
-        signal_power_w= None,
-        interferance_power = None,
-        noise_figure_db = 1.0,
-        bandwidth = 20e6):
+@dataclass
+class LinkBudgetResults:
+    signal_db: float
+    interference_db: float
+    noise_db: float
 
-    def to_db(x):
-        return 10 * math.log10(x) if x > 0 else -999.0
+    snr_db: float
+    sir_db: float
+    sinr_db: float
 
-    #noise power
-    k = 1.380649e-23
-    T = 290.0
-    nf_lin = 10 ** (noise_figure_db / 10)
-    noise_power = k * T * bandwidth * nf_lin
+    capacity_mbps: float
 
 
-    #default values in case of missing values
-    if signal_power_w is None:
-        signal_power_w = 0.0
-    if interferance_power is None:
-        interferance_power = 0.0
+class LinkBudgetCalculations:
 
+    def __init__(self,
+                 signal_power_watts=None,
+                 interference_power_watts=None,
+                 noise_figure_db=1.0,
+                 bandwidth_hz=20e6):
 
+        self.signal_power_watts = signal_power_watts or 0.0
+        self.interference_power_watts = interference_power_watts or 0.0
+        self.noise_figure_db = noise_figure_db
+        self.bandwidth_hz = bandwidth_hz
 
+    @staticmethod
+    def watts_to_db(watts: float) -> float:
+        return 10 * math.log10(watts) if watts > 0 else float('-inf')
 
-    #SNR, SIR, SINR
-    snr_lin = signal_power_w / noise_power if noise_power > 0 else float("inf")
-    snr_db = to_db(snr_lin)
+    def noise_power(self) -> float:
+        k = 1.380649e-23
+        T = 290.0
+        nf_linear = 10 ** (self.noise_figure_db / 10)
+        return k * T * self.bandwidth_hz * nf_linear
 
-    if interferance_power > 0:
-        sir_lin = signal_power_w /interferance_power
-        sir_db = to_db(sir_lin)
-    else:
-        sir_lin = float("inf")
-        sir_db = float("inf")
+    def compute(self) -> LinkBudgetResults:
 
-    sinr_lin = signal_power_w / (interferance_power + noise_power)
-    sinr_db = to_db(sinr_lin)
+        noise_watts = self.noise_power()
 
-    #shannon capacity
-    capacity_bps = bandwidth * math.log10(1+ sinr_lin)
-    capacity_mbps = capacity_bps / 1e6
+        # SNR
+        snr_watts = (
+            self.signal_power_watts / noise_watts
+            if noise_watts > 0 else float('inf')
+        )
 
+        # SIR
+        if self.interference_power_watts > 0:
+            sir_watts = self.signal_power_watts / self.interference_power_watts
+        else:
+            sir_watts = float('inf')
 
-    signal_db = to_db(signal_power_w)
-    interference_db = to_db(interferance_power)
-    noise_db = to_db(noise_figure_db)
+        # SINR
+        sinr_watts = self.signal_power_watts / (
+            self.interference_power_watts + noise_watts
+        )
 
-    return{
-        "signal_dbw": signal_db,
-        "interference_dbw": interference_db,
-        "noise_dbw": noise_db,
+        # Shannon capacity
+        capacity_bps = self.bandwidth_hz * math.log2(1 + sinr_watts)
+        capacity_mbps = capacity_bps / 1e6
 
-        "snr_dbw": snr_db,
-        "sir_dbw": sir_db,
-        "sinr_dbw": sinr_db,
+        return LinkBudgetResults(
+            signal_db=self.watts_to_db(self.signal_power_watts),
+            interference_db=self.watts_to_db(self.interference_power_watts),
+            noise_db=self.watts_to_db(noise_watts),
 
-        "capacity_mbps": capacity_mbps,
-    }
+            snr_db=self.watts_to_db(snr_watts),
+            sir_db=self.watts_to_db(sir_watts),
+            sinr_db=self.watts_to_db(sinr_watts),
 
-
+            capacity_mbps=capacity_mbps
+        )
