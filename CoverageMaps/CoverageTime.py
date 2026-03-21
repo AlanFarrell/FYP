@@ -13,8 +13,9 @@ def coverage_map():
     lon_min, lon_max = -10.7, -5.5
     TimeStep = 20
     LatLonStep = 1
+    simulation_duration = 2
     TLEdata = get_starlink_tles()
-    propagated_data = quickPropagate(TLEdata, 2, TimeStep)
+    propagated_data = quickPropagate(TLEdata, simulation_duration, TimeStep)
 
     lats = np.arange(lat_min, lat_max, LatLonStep)
     lons = np.arange(lon_min, lon_max, LatLonStep)
@@ -27,7 +28,7 @@ def coverage_map():
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
             print(f"Checking coverage at {lat}, {lon}")
-            stats = checkForCoverage(lat, lon, propagated_data)
+            stats = checkForCoverage(lat, lon, propagated_data, simulation_duration)
             grid[i, j] = stats["coverage_percent"]
 
 

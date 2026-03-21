@@ -2,8 +2,9 @@ from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from orbit.isVisible import is_visible
 from orbit.BeamWidth import BeamFilter
 
-def checkForCoverage(lat, lon, propagatedSatellites, beamwidth=15.0):
+def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0):
     coverage_windows = []
+
     in_coverage = False
     window_start = None
 
@@ -12,7 +13,6 @@ def checkForCoverage(lat, lon, propagatedSatellites, beamwidth=15.0):
     for idx, t in enumerate(timeline):
         jd, fr = GetJulianDate(t)
         visible_satellites = []
-
         for satellite_name, samples in propagatedSatellites.items():
             sat_data = samples[idx]
             r_teme = sat_data["r"]
@@ -50,7 +50,7 @@ def checkForCoverage(lat, lon, propagatedSatellites, beamwidth=15.0):
 
 
     total_secs = sum((end - start).total_seconds() for start, end in coverage_windows)
-    coverage_percent = (total_secs / (24 * 3600)) * 100.0
+    coverage_percent = (total_secs / (simulation_duration * 3600)) * 100.0
     total_mins = total_secs / 60.0
 
     return {
