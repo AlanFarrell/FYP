@@ -13,6 +13,7 @@ class LinkBudgetResults:
     sinr_db: float
 
     capacity_mbps: float
+    fspl_db: float | None = None
 
 
 class LinkBudgetCalculations:
@@ -32,6 +33,19 @@ class LinkBudgetCalculations:
     def watts_to_db(watts: float) -> float:
         return 10 * math.log10(watts) if watts > 0 else float('-inf')
 
+    @staticmethod
+    def db_to_watts(db: float) -> float:
+        return 10 ** (db / 10)
+
+    @staticmethod
+    def free_space_path_loss(freq_hz: float, distance_m: float) -> float:
+        return 20 * math.log10(distance_m) + 20 * math.log10(freq_hz) - 147.55
+
+    def received_power_watts(self, tx_eirp_dbw, rx_gain_dbi, distance_m, freq_hz):
+        fspl_db = self.free_space_path_loss(freq_hz, distance_m)
+        pr_dbw = tx_eirp_dbw + rx_gain_dbi - fspl_db
+        return 10 ** (pr_dbw / 10.0), fspl_db
+
     def noise_power(self) -> float:
         k = 1.380649e-23
         T = 290.0
@@ -39,27 +53,21 @@ class LinkBudgetCalculations:
         return k * T * self.bandwidth_hz * nf_linear
 
     def compute(self) -> LinkBudgetResults:
-
         noise_watts = self.noise_power()
-
-        # SNR
         snr_watts = (
             self.signal_power_watts / noise_watts
             if noise_watts > 0 else float('inf')
         )
 
-        # SIR
-        if self.interference_power_watts > 0:
-            sir_watts = self.signal_power_watts / self.interference_power_watts
-        else:
-            sir_watts = float('inf')
+        sir_watts = (
+            self.signal_power_watts / self.interference_power_watts
+            if self.interference_power_watts > 0 else float('inf')
+        )
 
-        # SINR
         sinr_watts = self.signal_power_watts / (
             self.interference_power_watts + noise_watts
         )
 
-        # Shannon capacity
         capacity_bps = self.bandwidth_hz * math.log2(1 + sinr_watts)
         capacity_mbps = capacity_bps / 1e6
 

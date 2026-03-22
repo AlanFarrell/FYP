@@ -1,14 +1,20 @@
 from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from orbit.isVisible import is_visible
 from orbit.BeamWidth import BeamFilter
+from LinkBudgetCalculations.linkbudget import LinkBudgetCalculations
+from LinkBudgetCalculations.ComputeLinkBudget import compute_link_budget
+
+
+import numpy as np
 
 def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0):
     coverage_windows = []
-
     in_coverage = False
     window_start = None
 
     timeline = [entry["time"] for entry in next(iter(propagatedSatellites.values()))]
+
+    timestep_capacities = []
 
     for idx, t in enumerate(timeline):
         jd, fr = GetJulianDate(t)
@@ -34,6 +40,9 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
             beamwidth_deg=beamwidth
         )
 
+        link_budget = compute_link_budget(optimal_satellite, filtered_satellites, jd, fr, lat, lon)
+        timestep_capacities.append(link_budget["capacity_mbps"])
+
         coverage_available = len(filtered_satellites) > 0
 
 
@@ -52,10 +61,12 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
     total_secs = sum((end - start).total_seconds() for start, end in coverage_windows)
     coverage_percent = (total_secs / (simulation_duration * 3600)) * 100.0
     total_mins = total_secs / 60.0
+    average_capacity = np.mean(timestep_capacities) if timestep_capacities else 0.0
 
     return {
         "coverage_windows": coverage_windows,
         "total_minutes": total_mins,
         "coverage_percent": coverage_percent,
+        "coverage_capacity": average_capacity,
     }
 
