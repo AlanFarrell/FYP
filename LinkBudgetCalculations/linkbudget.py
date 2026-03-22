@@ -19,10 +19,10 @@ class LinkBudgetResults:
 class LinkBudgetCalculations:
 
     def __init__(self,
-                 signal_power_watts=None,
-                 interference_power_watts=None,
-                 noise_figure_db=1.0,
-                 bandwidth_hz=20e6):
+                 signal_power_watts= None,
+                 interference_power_watts = None,
+                 noise_figure_db = 3.0,
+                 bandwidth_hz = 100e6):
 
         self.signal_power_watts = signal_power_watts or 0.0
         self.interference_power_watts = interference_power_watts or 0.0
@@ -41,9 +41,9 @@ class LinkBudgetCalculations:
     def free_space_path_loss(freq_hz: float, distance_m: float) -> float:
         return 20 * math.log10(distance_m) + 20 * math.log10(freq_hz) - 147.55
 
-    def received_power_watts(self, tx_eirp_dbw, rx_gain_dbi, distance_m, freq_hz):
+    def received_power_watts(self, transmit_power_db, received_power_db, distance_m, freq_hz):
         fspl_db = self.free_space_path_loss(freq_hz, distance_m)
-        pr_dbw = tx_eirp_dbw + rx_gain_dbi - fspl_db
+        pr_dbw = transmit_power_db + received_power_db - fspl_db
         return 10 ** (pr_dbw / 10.0), fspl_db
 
     def noise_power(self) -> float:

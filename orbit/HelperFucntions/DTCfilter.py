@@ -1,22 +1,13 @@
-def is_DTC(tle_line2):
+def is_DTC(norad_id):
 
 
     """
     Returns True if this TLE belongs to a Direct-To-Cell Starlink satellite.
-    Identifies DTC satellites by inclination (53° and 43° shells).
     """
+    def is_DTC(norad_id):
+        DTC_batch = [
+            range(59000, 59200),
+            range(59500, 59600),
+        ]
 
-    fields = tle_line2.split()
-    inc = float(fields[2])
-    ecc = float("0." + fields[4].lstrip("0"))
-
-    if ecc > 0.00030:
-        return False
-
-    if 52.8 <= inc <= 53.4:
-        return True
-    if 42.8 <= inc <= 43.4:
-        return True
-
-    return False
-
+        return any(norad_id in batch for batch in DTC_batch)

@@ -19,12 +19,12 @@ def coverage_mapping():
     coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
     capacity_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_capacity")
 
-    generate_heatmap(simulation_params, coverage_grid, title="Coverage Percentage Average Over Time")
-    generate_heatmap(simulation_params, capacity_grid, title="Coverage Capacity Average Over Time")
+    generate_heatmap(simulation_params, coverage_grid, title="Coverage Percentage Average Over Time", colourBarLabel="Coverage Time as percent")
+    generate_heatmap(simulation_params, capacity_grid, title="Coverage Capacity Average Over Time", colourBarLabel="Capacity (Mbps)")
 
 
 
-def generate_heatmap(simulation_config, grid, title):
+def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
     plt.figure(figsize=(10, 8))
     ax = plt.axes(projection=ccrs.PlateCarree())
 
@@ -43,7 +43,10 @@ def generate_heatmap(simulation_config, grid, title):
     img = ax.imshow(
         grid,
         origin="lower",
-        extent=[simulation_config["lon_min"], simulation_config["lon_max"],simulation_config["lat_min"], simulation_config["lat_max"]],
+        extent=[
+            simulation_config["lon_min"], simulation_config["lon_max"],
+            simulation_config["lat_min"], simulation_config["lat_max"]
+        ],
         cmap="viridis",
         vmin=0,
         vmax=vmax,
@@ -51,12 +54,37 @@ def generate_heatmap(simulation_config, grid, title):
         alpha=0.75,
     )
 
-    if "Coverage" in title:
-        colorbar_label = "Coverage %"
-    else:
-        colorbar_label = "Capacity (mbps)"
+    contour_levels = np.linspace(0, vmax, 10)
+    cs = ax.contour(
+        grid,
+        levels=contour_levels,
+        colors='black',
+        linewidths=0.5,
+        origin="lower",
+        extent=[
+            simulation_config["lon_min"], simulation_config["lon_max"],
+            simulation_config["lat_min"], simulation_config["lat_max"]
+        ],
+        transform=ccrs.PlateCarree()
+    )
+    ax.clabel(cs, inline=True, fontsize=6, fmt="%.1f")
 
-    plt.colorbar(img, ax=ax, label=colorbar_label)
+    mean_val = np.mean(grid)
+    min_val = np.min(grid)
+    max_val = np.max(grid)
+
+    stats_text = (f"Max:  {max_val:.2f}\n"
+                  f"Min:  {min_val:.2f}\n"
+                  f"Mean: {mean_val:.2f}")
+
+    plt.gcf().text(
+        0.82, 0.25,
+        stats_text,
+        fontsize=10,
+        bbox=dict(facecolor='white', alpha=0.8)
+    )
+
+    plt.colorbar(img, ax=ax, label=colourBarLabel)
     plt.title(title)
     plt.tight_layout()
     plt.show()

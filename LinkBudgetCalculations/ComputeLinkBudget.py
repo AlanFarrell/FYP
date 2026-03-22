@@ -10,8 +10,8 @@ def slant_range_m(satellite_ecef, observer_ecef):
 def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon):
 
     #PLACEHOLDER VALUES -> TO BE CHANGED
-    transmit_power_watts = 20
-    receiver_gain_dbi = 30
+    transmit_power_db = 58
+    receiver_gain_dbi = 33
     frequency_hz = 12e9
     interference_watts = 0.0
 
@@ -25,13 +25,14 @@ def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon):
 
     satellite_position_km = optimal_satellite["position_km"]
     satellite_ecef_m = np.array(teme_to_ecef(satellite_position_km, jd, fr)) * 1000.0
-    observer_ecef_m = LatLonToECEF(lat, lon, 0.0)
+    observer_ecef_m = np.array(LatLonToECEF(lat, lon, 0.0))
 
     distance_m = slant_range_m(satellite_ecef_m, observer_ecef_m)
 
     link_budget = LinkBudgetCalculations()
 
-    received_signal_watts, path_loss_db = link_budget.received_power_watts(transmit_power_watts, receiver_gain_dbi, distance_m, frequency_hz)
+
+    received_signal_watts, path_loss_db = link_budget.received_power_watts(transmit_power_db, receiver_gain_dbi, distance_m, frequency_hz)
 
     for i in interferers:
         position_km = i["position_km"]
@@ -39,8 +40,8 @@ def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon):
 
         distance2_m = slant_range_m(position_ecef_m, observer_ecef_m)
 
-        power_watts, _ = link_budget.received_power_watts(transmit_power_watts, receiver_gain_dbi, distance2_m, frequency_hz)
-        interference_watts += power_watts
+        power_watts, _ = link_budget.received_power_watts(transmit_power_db, receiver_gain_dbi, distance2_m, frequency_hz)
+        interference_watts += power_watts * 0.001
 
     link_budget.signal_power_watts = received_signal_watts
     link_budget.interference_power_watts = interference_watts
