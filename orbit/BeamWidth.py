@@ -4,6 +4,9 @@ from orbit.HelperFucntions.GeodeticToECEF import LatLonToECEF
 from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 
 def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
+    if len(sats) == 0:
+        return [], None
+
     half_angle = beamwidth_deg/2
     kept = []
 
@@ -21,29 +24,33 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
 
     observer_teme = rotation_matrix @ observer_ecef
 
-    for sat in sats:
-        sat_eci = np.array(sat["position_km"], dtype=float)
+    satellite_positions = np.array([s["position_km"] for s in sats])
 
-        #unit verctor pointing from satellite to earths center
-        u_beam = -sat_eci/np.linalg.norm(sat_eci)
-        #Line of sight vector
-        v_los = observer_teme - sat_eci
-        #unit LOS
-        u_los = v_los / np.linalg.norm(v_los)
-        cosang = np.dot(u_beam, u_los)
-        cosang = np.clip(cosang, -1.0, 1.0)
-        theta = degrees(acos(cosang))
+    #compute beam unit vectors
+    satellite_normalised = np.linalg.norm(satellite_positions, axis=1, keepdims=True)
+    u_beam = -satellite_positions / satellite_normalised
 
-        if theta <= half_angle:
-            kept.append((theta, sat))
+    #line of sight vectors
+    v_los = observer_teme - satellite_positions
+    v_los_normalised = np.linalg.norm(v_los, axis=1, keepdims=True)
+    u_los = v_los / v_los_normalised
 
-    if not kept:
+    #angle between beam and LOS
+    cosang = np.sum(u_beam * u_los, axis=1)
+    cosang = np.clip(cosang, -1.0, 1.0)
+
+    theta = np.degrees(np.arccos(cosang))
+
+    keep_mask = theta <= half_angle
+
+    satellites_array = np.array(sats, dtype=object)
+
+    if not np.any(keep_mask):
         return [], None
 
-    kept.sort()
-    best = kept[0][1]
-    filtered = [sat for _, sat in kept]
+    kept_satellites = satellites_array[keep_mask]
+    best_sattelite = kept_satellites[np.argmin(theta[keep_mask])]
 
-    return filtered, best
+    return list(kept_satellites), best_sattelite
 
 
