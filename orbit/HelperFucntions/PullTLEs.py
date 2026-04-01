@@ -2,8 +2,10 @@ import requests
 import os
 from orbit.HelperFucntions.DTCfilter import is_DTC
 
+
 def get_starlink_tles(dtc_only=False):
     url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
+    tles = []
 
     try:
         response = requests.get(url, timeout=8)
@@ -18,19 +20,18 @@ def get_starlink_tles(dtc_only=False):
         with open(tle_path, "r") as f:
             lines = f.read().strip().split("\n")
 
-    if not dtc_only:
-        return lines
 
-    # ---- Apply DTC filter ----
-    # filtered_satellites = []
-    #
-    # for i in range(0, len(lines), 3):
-    #     fields = lines.split()
-    #     norad_id = int(fields[1][:5])
-    #
-    #     if is_DTC(norad_id):
-    #         filtered_satellites.extend(lines[i:i+3])
-    #
-    # print(f"[INFO] DTC filter: kept {len(filtered_satellites)//3} satellites")
-    # return filtered_satellites
+    for i in range(0, len(lines), 3):
+        name = lines[i].strip()
+        line1 = lines[i+1].strip()
+        line2 = lines[i+2].strip()
 
+        norad_id = int(line1[2:7])
+
+        if dtc_only:
+            if is_DTC(norad_id):
+                tles.append((name, line1, line2))
+        else:
+            tles.append((name, line1, line2))
+
+    return tles

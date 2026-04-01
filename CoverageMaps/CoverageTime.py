@@ -10,7 +10,7 @@ import numpy as np
 
 def coverage_mapping():
     simulation_params = simulation_parameters()
-    tle_data = get_starlink_tles()
+    tle_data = get_starlink_tles(dtc_only=True)
 
     print("Propagating satellites...")
     propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["porpagation_time_step"])
