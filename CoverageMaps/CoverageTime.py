@@ -3,7 +3,7 @@ from orbit.HelperFucntions.PullTLEs import get_starlink_tles
 from orbit.QuickPropagate import quickPropagate
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("TkAgg")
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import numpy as np

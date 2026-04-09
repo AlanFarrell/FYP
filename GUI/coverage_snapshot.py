@@ -5,7 +5,6 @@ from orbit.BeamWidth import BeamFilter
 from LinkBudgetCalculations.ComputeLinkBudget import compute_link_budget
 from orbit.HelperFucntions.TEMEtoECEF import teme_to_ecef
 
-
 precomputed_data = {}
 
 def precompute_satellite_data(propagatedSatellites, timestep_index):

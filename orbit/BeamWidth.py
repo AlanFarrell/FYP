@@ -1,5 +1,4 @@
 import numpy as np
-from math import degrees, acos
 from orbit.HelperFucntions.GeodeticToECEF import LatLonToECEF
 from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 
@@ -8,7 +7,6 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
         return [], None
 
     half_angle = beamwidth_deg/2
-    kept = []
 
     #convert observer LatLon to ECEF then TEME
     observer_ecef = np.array(LatLonToECEF(obs_lat, obs_lon, obs_alt))

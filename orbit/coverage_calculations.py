@@ -10,9 +10,9 @@ def simulation_parameters():
         "lat_max": 56.0,
         "lon_min": -10.7,
         "lon_max": -5.5,
-        "lat_lon_step": 0.1,
+        "lat_lon_step": 1,
         "porpagation_time_step": 60,
-        "simulation_duration_hours": 12
+        "simulation_duration_hours": 24
     }
 
 #Make latitude/longitude grid

@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import streamlit as st
 import numpy as np
 from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
 
 from GUI.coverage_snapshot import checkCoverageSnapshot
 from orbit.HelperFucntions.PullTLEs import get_starlink_tles
@@ -21,6 +22,13 @@ def load_tles(dtc_only):
 @st.cache_data
 def propagate_full_day(tle_data):
     return quickPropagate(tle_data, duration=24, step=300)
+
+
+def compute_cells(args):
+    i , j, lat, lon, propagated, timestep = args
+    statistics = checkCoverageSnapshot(lat, lon, propagated, timestep)
+    return i, j, statistics["coverage_percent"], statistics["coverage_capacity"]
+
 
 st.title("Starlink Coverage Demo – Ireland")
 st.write("Use the slider below to visualize how Starlink coverage changes throughout the day.")
@@ -71,11 +79,16 @@ if st.session_state["started"]:
         coverage_grid = np.zeros((len(lats), len(lons)))
         capacity_grid = np.zeros((len(lats), len(lons)))
 
-        for i, lat in enumerate(lats):
-            for j, lon in enumerate(lons):
-                stats = checkCoverageSnapshot(lat, lon, propagated, timestep)
-                coverage_grid[i, j] = stats["coverage_percent"]
-                capacity_grid[i, j] = stats["coverage_capacity"]
+        tasks = [
+            (i, j, lat, lon, propagated, timestep)
+            for i, lat in enumerate(lats)
+            for j, lon in enumerate(lons)
+        ]
+
+        with ThreadPoolExecutor() as executor:
+            for i, j, coverage, capacity in executor.map(compute_cells, tasks):
+                coverage_grid[i, j] = coverage
+                capacity_grid[i, j] = capacity
 
         st.session_state["coverage_cache"][timestep] = (coverage_grid, capacity_grid)
 
