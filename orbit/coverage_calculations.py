@@ -3,8 +3,6 @@ import matplotlib
 matplotlib.use("TkAgg")
 from orbit.CheckForCoverage import checkForCoverage
 
-
-
 #Generate config
 def simulation_parameters():
     return {
@@ -13,10 +11,9 @@ def simulation_parameters():
         "lon_min": -10.7,
         "lon_max": -5.5,
         "lat_lon_step": 0.1,
-        "porpagation_time_step": 30,
-        "simulation_duration_hours": 5
+        "porpagation_time_step": 60,
+        "simulation_duration_hours": 12
     }
-
 
 #Make latitude/longitude grid
 def generate_grid(grid_paramaters):
@@ -24,7 +21,6 @@ def generate_grid(grid_paramaters):
     lons = np.arange(grid_paramaters["lon_min"], grid_paramaters["lon_max"], grid_paramaters["lat_lon_step"])
     grid = np.zeros((len(lats), len(lons)))
     return lats, lons, grid
-
 
 #Compute coverage for grid points
 def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metric = "coverage_percent"):

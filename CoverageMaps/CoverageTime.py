@@ -11,17 +11,13 @@ import numpy as np
 def coverage_mapping():
     simulation_params = simulation_parameters()
     tle_data = get_starlink_tles(dtc_only=True)
-
     print("Propagating satellites...")
     propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["porpagation_time_step"])
-
     lats, lons, _ = generate_grid(simulation_params)
     coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
     capacity_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_capacity")
-
     generate_heatmap(simulation_params, coverage_grid, title="Coverage Percentage Average Over Time", colourBarLabel="Coverage Time as percent")
     generate_heatmap(simulation_params, capacity_grid, title="Coverage Capacity Average Over Time", colourBarLabel="Capacity (Mbps)")
-
 
 
 def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
@@ -38,7 +34,8 @@ def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
 
-    vmax = np.max(grid)
+    vmin = np.nanmin(grid)
+    vmax = np.nanmax(grid)
 
     img = ax.imshow(
         grid,
@@ -48,27 +45,35 @@ def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
             simulation_config["lat_min"], simulation_config["lat_max"]
         ],
         cmap="viridis",
-        vmin=0,
+        vmin=vmin,
         vmax=vmax,
         transform=ccrs.PlateCarree(),
         alpha=0.75,
     )
 
-    contour_levels = np.linspace(0, vmax, 10)
-    cs = ax.contour(
-        grid,
-        levels=contour_levels,
-        colors='black',
-        linewidths=0.5,
-        origin="lower",
-        extent=[
-            simulation_config["lon_min"], simulation_config["lon_max"],
-            simulation_config["lat_min"], simulation_config["lat_max"]
-        ],
-        transform=ccrs.PlateCarree()
-    )
-    ax.clabel(cs, inline=True, fontsize=6, fmt="%.1f")
+    #if contours were [0,0,0,0] system would crash -> this block solves this issue
+    if vmin == vmax or np.isnan(vmin) or np.isnan(vmax):
+        contour_levels = None
+    else:
+        contour_levels = np.linspace(vmin, vmax, 10)
+    #----------------------------------------------------------------------------
 
+    if contour_levels is not None:
+        cs = ax.contour(
+            grid,
+            levels=contour_levels,
+            colors='black',
+            linewidths=0.5,
+            origin="lower",
+            extent=[
+                simulation_config["lon_min"], simulation_config["lon_max"],
+                simulation_config["lat_min"], simulation_config["lat_max"]
+            ],
+            transform=ccrs.PlateCarree()
+        )
+        ax.clabel(cs, inline=True, fontsize=6, fmt="%.1f")
+
+    # Stats
     mean_val = np.mean(grid)
     min_val = np.min(grid)
     max_val = np.max(grid)
