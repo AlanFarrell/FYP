@@ -21,7 +21,7 @@ def coverage_mapping():
     tle_data = get_tles(tle_choice)
 
     print("Propagating satellites...")
-    propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["porpagation_time_step"])
+    propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["propagation_time_step"])
     lats, lons, _ = generate_grid(simulation_params)
     coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
     capacity_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_capacity")
