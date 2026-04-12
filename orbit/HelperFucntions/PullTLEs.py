@@ -15,7 +15,7 @@ def get_starlink_tles(dtc_only=False):
     except Exception as e:
         print(f"[ERROR] TLE download failed: {e}. Using local backup...")
         here = os.path.dirname(os.path.abspath(__file__))
-        tle_path = os.path.join(here, "starlink.tle")
+        tle_path = os.path.join(here, "../TLE_data/starlink.tle")
 
         with open(tle_path, "r") as f:
             lines = f.read().strip().split("\n")

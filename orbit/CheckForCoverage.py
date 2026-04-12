@@ -77,8 +77,11 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
         filtered_satellites, optimal_satellite = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0, beamwidth_deg=beamwidth)
         coverage_available = len(filtered_satellites) > 0
 
-        link_budget = compute_link_budget(optimal_satellite, filtered_satellites, jd, fr, lat, lon)
-        timestep_capacities.append(link_budget["capacity_mbps"])
+        if coverage_available:
+            link_budget = compute_link_budget(optimal_satellite, filtered_satellites, jd, fr, lat, lon)
+            timestep_capacities.append(link_budget["capacity_mbps"])
+        else:
+            timestep_capacities.append(0.0)
 
         if coverage_available and not in_coverage:
             in_coverage = True

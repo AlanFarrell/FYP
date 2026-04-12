@@ -5,19 +5,14 @@ import streamlit as st
 import numpy as np
 from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor
-
-from GUI.coverage_snapshot import checkCoverageSnapshot
-from orbit.HelperFucntions.PullTLEs import get_starlink_tles
-from orbit.QuickPropagate import quickPropagate
-from orbit.coverage_calculations import simulation_parameters, generate_grid
-from GUI.SnapShotHeatmap import generate_cartopy_heatmap
 import matplotlib
 matplotlib.use("Agg")
 
-
-@st.cache_data
-def load_tles(dtc_only):
-    return get_starlink_tles(dtc_only=dtc_only)
+from GUI.coverage_snapshot import checkCoverageSnapshot
+from orbit.QuickPropagate import quickPropagate
+from orbit.coverage_calculations import simulation_parameters, generate_grid
+from GUI.SnapShotHeatmap import generate_cartopy_heatmap
+from orbit.HelperFucntions.TLELoader import get_tles, TLE_SOURCES
 
 @st.cache_data
 def propagate_full_day(tle_data):
@@ -29,6 +24,21 @@ def compute_cells(args):
     statistics = checkCoverageSnapshot(lat, lon, propagated, timestep)
     return i, j, statistics["coverage_percent"], statistics["coverage_capacity"]
 
+grid_choice = st.selectbox(
+    "Select grid density",
+    [
+        "Coarse (≈50 km)",
+        "Medium (≈25 km)",
+        "Fine (≈10 km)"
+    ]
+)
+
+if grid_choice == "Coarse (≈50 km)":
+    grid_step = 0.5
+elif grid_choice == "Medium (≈25 km)":
+    grid_step = 0.25
+elif grid_choice == "Fine (≈10 km)":
+    grid_step = 0.1
 
 st.title("Starlink Coverage Demo – Ireland")
 st.write("Use the slider below to visualize how Starlink coverage changes throughout the day.")
@@ -39,17 +49,21 @@ if "started" not in st.session_state:
 if "coverage_cache" not in st.session_state:
     st.session_state["coverage_cache"] = {}
 
-sim_params = simulation_parameters()
+sim_params = simulation_parameters(lat_lon_step=grid_step)
 lats, lons, _ = generate_grid(sim_params)
-dtc_only = st.checkbox("Filter to DTC-only satellites", value=False)
+tle_choice = st.selectbox("select constellation", list(TLE_SOURCES.keys()))
 
 #OPTIMISATION FEATURE
 #runs propagation only once, and only reruns if DTC filter changes
-if "propagated" not in st.session_state or st.session_state.get("dtc_only") != dtc_only:
-    tle_data = load_tles(dtc_only)
+if ("propagated" not in st.session_state or st.session_state.get("tle_choice") != tle_choice or st.session_state.get("grid_choice") != grid_choice):
+    st.info(f"Loading TLEs for {tle_choice}")
+    tle_data = get_tles(tle_choice)
+    st.info("Propagating satellites…")
     st.session_state["propagated"] = propagate_full_day(tle_data)
-    st.session_state["dtc_only"] = dtc_only
+    st.session_state["tle_choice"] = tle_choice
+    st.session_state["grid_choice"] = grid_choice
     st.session_state["coverage_cache"].clear()
+
 
 propagated = st.session_state["propagated"]
 first_sat = next(iter(propagated.values()))
@@ -63,6 +77,8 @@ selected_dt = st.slider(
         step=timedelta(minutes=5),
         format="DD/MM/YY - hh:mm",
     )
+
+format = "DD/MM/YY - hh:mm",
 
 timestep = min(range(len(timeline)), key=lambda i: abs(timeline[i] - selected_dt))
 
@@ -98,5 +114,3 @@ if st.session_state["started"]:
 
     st.pyplot(fig1)
     st.pyplot(fig2)
-
-

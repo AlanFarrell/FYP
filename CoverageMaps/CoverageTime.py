@@ -1,6 +1,8 @@
 from orbit.coverage_calculations import simulation_parameters, compute_coverage_grid, generate_grid
 from orbit.HelperFucntions.PullTLEs import get_starlink_tles
 from orbit.QuickPropagate import quickPropagate
+from orbit.HelperFucntions.TLELoader import get_tles, TLE_SOURCES
+
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("TkAgg")
@@ -9,8 +11,15 @@ import cartopy.feature as cfeature
 import numpy as np
 
 def coverage_mapping():
+    #tle_choice = "Starlink (DTC Only)"
+    #tle_choice = "Starlink (All)"
+    tle_choice = "OneWeb"
+    #tle_choice = "Kuiper"
+
+    print(f"[INFO] Loading TLEs for {tle_choice}")
     simulation_params = simulation_parameters()
-    tle_data = get_starlink_tles(dtc_only=True)
+    tle_data = get_tles(tle_choice)
+
     print("Propagating satellites...")
     propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["porpagation_time_step"])
     lats, lons, _ = generate_grid(simulation_params)
