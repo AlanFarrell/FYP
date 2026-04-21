@@ -26,7 +26,7 @@ def quickPropagate(TLEs, duration, step):
     startTime = datetime.now(timezone.utc)
     currentTime = startTime
     endTime = startTime + timedelta(hours=duration)
-    dt = timedelta(seconds=step)
+    time_delta = timedelta(seconds=step)
 
     propagated = {name: [] for name, _ in satellites}
 
@@ -41,7 +41,7 @@ def quickPropagate(TLEs, duration, step):
                     "r": r,  # position (km)
                     "v": v  # velocity (km/s)
                 })
-        currentTime += dt
+        currentTime += time_delta
         print(f"Propagating at time {currentTime}")
 
     return propagated

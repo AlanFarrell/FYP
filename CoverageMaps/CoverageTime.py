@@ -1,7 +1,6 @@
 from orbit.coverage_calculations import simulation_parameters, compute_coverage_grid, generate_grid
-from orbit.HelperFucntions.PullTLEs import get_starlink_tles
 from orbit.QuickPropagate import quickPropagate
-from orbit.HelperFucntions.TLELoader import get_tles, TLE_SOURCES
+from orbit.HelperFucntions.TLELoader import get_tles
 
 import matplotlib.pyplot as plt
 import matplotlib
@@ -9,15 +8,17 @@ matplotlib.use("TkAgg")
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import numpy as np
+from scipy.ndimage import gaussian_filter
 
 def coverage_mapping():
+
     #tle_choice = "Starlink (DTC Only)"
-    #tle_choice = "Starlink (All)"
-    tle_choice = "OneWeb"
+    tle_choice = "Starlink (All)"
+    #tle_choice = "OneWeb"
     #tle_choice = "Kuiper"
 
     print(f"[INFO] Loading TLEs for {tle_choice}")
-    simulation_params = simulation_parameters()
+    simulation_params = simulation_parameters(lat_lon_step=0.1)
     tle_data = get_tles(tle_choice)
 
     print("Propagating satellites...")
@@ -30,6 +31,7 @@ def coverage_mapping():
 
 
 def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
+    grid = gaussian_filter(grid, sigma=1.0)
     plt.figure(figsize=(10, 8))
     ax = plt.axes(projection=ccrs.PlateCarree())
 
@@ -42,44 +44,41 @@ def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
+    ax.add_feature(cfeature.LAND, facecolor="none", edgecolor="black")
 
-    vmin = np.nanmin(grid)
-    vmax = np.nanmax(grid)
+    vmin = np.percentile(grid, 5)
+    vmax = np.percentile(grid, 95)
 
-    img = ax.imshow(
-        grid,
-        origin="lower",
-        extent=[
-            simulation_config["lon_min"], simulation_config["lon_max"],
-            simulation_config["lat_min"], simulation_config["lat_max"]
-        ],
-        cmap="viridis",
+    lon = np.linspace(simulation_config["lon_min"], simulation_config["lon_max"], grid.shape[1])
+    lat = np.linspace(simulation_config["lat_min"], simulation_config["lat_max"], grid.shape[0])
+    Lon, Lat = np.meshgrid(lon, lat)
+
+    img = ax.pcolormesh(
+        Lon, Lat, grid,
+        cmap="plasma",
         vmin=vmin,
         vmax=vmax,
-        transform=ccrs.PlateCarree(),
-        alpha=0.75,
+        shading="nearest",
+        transform=ccrs.PlateCarree()
     )
 
     #if contours were [0,0,0,0] system would crash -> this block solves this issue
     if vmin == vmax or np.isnan(vmin) or np.isnan(vmax):
         contour_levels = None
     else:
-        contour_levels = np.linspace(vmin, vmax, 10)
+        contour_levels = np.linspace(vmin, vmax, 6)
     #----------------------------------------------------------------------------
 
     if contour_levels is not None:
         cs = ax.contour(
-            grid,
+            Lon, Lat, grid,
             levels=contour_levels,
             colors='black',
-            linewidths=0.5,
-            origin="lower",
-            extent=[
-                simulation_config["lon_min"], simulation_config["lon_max"],
-                simulation_config["lat_min"], simulation_config["lat_max"]
-            ],
+            linewidths=0.4,
+            alpha=0.6,
             transform=ccrs.PlateCarree()
         )
+
         ax.clabel(cs, inline=True, fontsize=6, fmt="%.1f")
 
     # Stats

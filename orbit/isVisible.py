@@ -19,9 +19,3 @@ def visibility_check(r_teme, jd, fr, lat, lon, alt_m = 0.0):
     elev = ecef_los_to_levation(dx, dy, dz, lat, lon)
 
     return elev >= MASK_ANGLE_DEG, elev
-
-
-
-
-
-

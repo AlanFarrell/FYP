@@ -7,7 +7,7 @@ from orbit.isVisible import visibility_check
 from orbit.BeamWidth import BeamFilter
 from LinkBudgetCalculations.ComputeLinkBudget import compute_link_budget
 
-_visibility_cache = {}
+visibility_cache = {}
 """
 Optimisations:
 Satellite visibility is precomputed once per timestep instead of being recomputed
@@ -54,24 +54,24 @@ def precompute_data(propagated_satellites, lat, lon, timestep_indices=None):
     return visibility_at_time
 
 
-def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0, idx=None):
+def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0, time_step_index=None):
     timestep_capacities = []
     coverage_windows = []
     in_coverage = False
     window_start = None
 
     #===============================================
-    cache_key = (lat, lon, idx)
+    cache_key = (lat, lon, time_step_index)
 
-    if cache_key in _visibility_cache:
-        visibility_by_time = _visibility_cache[cache_key]
+    if cache_key in visibility_cache:
+        visibility_by_time = visibility_cache[cache_key]
     else:
-        if idx is not None:
-            visibility_by_time = precompute_data(propagatedSatellites, lat, lon, timestep_indices=[idx])
+        if time_step_index is not None:
+            visibility_by_time = precompute_data(propagatedSatellites, lat, lon, timestep_indices=[time_step_index])
         else:
             visibility_by_time = precompute_data(propagatedSatellites, lat, lon)
 
-        _visibility_cache[cache_key] = visibility_by_time
+        visibility_cache[cache_key] = visibility_by_time
 
     for t, jd, fr, visible_satellites in visibility_by_time:
         filtered_satellites, optimal_satellite = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0, beamwidth_deg=beamwidth)

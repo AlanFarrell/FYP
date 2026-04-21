@@ -50,5 +50,3 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
     best_sattelite = kept_satellites[np.argmin(theta[keep_mask])]
 
     return list(kept_satellites), best_sattelite
-
-
