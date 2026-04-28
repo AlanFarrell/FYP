@@ -2,6 +2,7 @@ from orbit.coverage_calculations import simulation_parameters, compute_coverage_
 from orbit.QuickPropagate import quickPropagate
 from orbit.HelperFucntions.TLELoader import get_tles
 
+from datetime import datetime, timezone
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("TkAgg")
@@ -13,16 +14,18 @@ from scipy.ndimage import gaussian_filter
 def coverage_mapping():
 
     #tle_choice = "Starlink (DTC Only)"
-    tle_choice = "Starlink (All)"
+    #tle_choice = "Starlink (All)"
     #tle_choice = "OneWeb"
-    #tle_choice = "Kuiper"
+    tle_choice = "Kuiper"
 
     print(f"[INFO] Loading TLEs for {tle_choice}")
     simulation_params = simulation_parameters(lat_lon_step=0.1)
     tle_data = get_tles(tle_choice)
 
     print("Propagating satellites...")
-    propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["propagation_time_step"])
+
+    start_time = datetime(year=2026, month=4, day=23, hour=7, minute=0, second=0, tzinfo=timezone.utc)
+    propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["propagation_time_step"], start_time_utc=start_time)
     lats, lons, _ = generate_grid(simulation_params)
     coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
     capacity_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_capacity")
@@ -90,12 +93,7 @@ def generate_heatmap(simulation_config, grid, title, colourBarLabel=None):
                   f"Min:  {min_val:.2f}\n"
                   f"Mean: {mean_val:.2f}")
 
-    plt.gcf().text(
-        0.82, 0.25,
-        stats_text,
-        fontsize=10,
-        bbox=dict(facecolor='white', alpha=0.8)
-    )
+    plt.gcf().text(0.82, 0.25, stats_text, fontsize=10, bbox=dict(facecolor='white', alpha=0.8))
 
     plt.colorbar(img, ax=ax, label=colourBarLabel)
     plt.title(title)

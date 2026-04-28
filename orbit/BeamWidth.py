@@ -21,7 +21,6 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
     ])
 
     observer_teme = rotation_matrix @ observer_ecef
-
     satellite_positions = np.array([s["position_km"] for s in sats])
 
     #compute beam unit vectors
@@ -38,9 +37,7 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
     cosang = np.clip(cosang, -1.0, 1.0)
 
     theta = np.degrees(np.arccos(cosang))
-
     keep_mask = theta <= half_angle
-
     satellites_array = np.array(sats, dtype=object)
 
     if not np.any(keep_mask):

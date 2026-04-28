@@ -3,45 +3,46 @@ from sgp4.api import Satrec
 from datetime import datetime, timedelta, timezone
 
 
-def quickPropagate(TLEs, duration, step):
+def quickPropagate(TLEs, duration, step, start_time_utc=None):
     """
-       Propagate all satellites from TLEs for 24 hours ahead.
-       Returns a dictionary:
-       {
-           "sat_name": [
-               {"time": datetime, "r": (x,y,z), "v": (vx,vy,vz)},
-               ...
-           ],
-           ...
-       }
-       """
+    Propagate all satellites from TLEs for a given duration.
 
-    satellites = []
-    for name, line1, line2 in TLEs:
-        name = name.strip()
-        line1 = line1.strip()
-        line2 = line2.strip()
-        satellites.append((name, Satrec.twoline2rv(line1, line2)))
+    -------
+    dict
+        {
+            "sat_name": [
+                {"time": datetime, "r": (x,y,z)},
+                ...
+            ]
+        }
+    """
 
-    startTime = datetime.now(timezone.utc)
-    currentTime = startTime
-    endTime = startTime + timedelta(hours=duration)
-    time_delta = timedelta(seconds=step)
+    satellites = [
+        (name.strip(), Satrec.twoline2rv(line1.strip(), line2.strip()))
+        for name, line1, line2 in TLEs
+    ]
 
+    if start_time_utc is None:
+        start_time_utc = datetime.now(timezone.utc)
+    elif start_time_utc.tzinfo is None:
+        raise ValueError("start_time_utc must be timezone-aware (UTC)")
+
+    end_time = start_time_utc + timedelta(hours=duration)
+    step_td = timedelta(seconds=step)
     propagated = {name: [] for name, _ in satellites}
 
-    while currentTime < endTime:
-        jd, fr = GetJulianDate(currentTime)
+    current_time = start_time_utc
+    while current_time < end_time:
+        jd, fr = GetJulianDate(current_time)
 
         for name, sat in satellites:
-            e, r ,v = sat.sgp4(jd, fr)
+            e, r, v = sat.sgp4(jd, fr)
             if e == 0:
                 propagated[name].append({
-                    "time": currentTime,
-                    "r": r,  # position (km)
-                    "v": v  # velocity (km/s)
+                    "time": current_time,
+                    "r": r,
                 })
-        currentTime += time_delta
-        print(f"Propagating at time {currentTime}")
+
+        current_time += step_td
 
     return propagated
