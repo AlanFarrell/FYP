@@ -39,18 +39,19 @@ def precompute_data(propagated_satellites, lat, lon, timestep_indices=None):
 
 
 def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0, time_step_index=None):
-    capacity_sum = 0.0
-    capacity_count = 0
+    coverage_capacity_sum = 0.0
+    coverage_capacity_count = 0
     coverage_windows = []
     in_coverage = False
     window_start_time = None
 
     visibility_by_time = (precompute_data(propagatedSatellites, lat, lon, timestep_indices=[time_step_index])
-        if time_step_index is not None else precompute_data(propagatedSatellites, lat, lon))
+        if time_step_index is not None
+        else precompute_data(propagatedSatellites, lat, lon)
+    )
 
     for t, visible_satellites in visibility_by_time:
         jd, fr = GetJulianDate(t)
-        capacity_this_step = 0.0
 
         if visible_satellites:
             filtered, optimal = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0, beamwidth_deg=beamwidth)
@@ -60,6 +61,8 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
         if filtered:
             link = compute_link_budget(optimal, filtered, jd, fr, lat, lon)
             capacity_this_step = link["capacity_mbps"]
+            coverage_capacity_sum += capacity_this_step
+            coverage_capacity_count += 1
 
             if not in_coverage:
                 in_coverage = True
@@ -69,17 +72,12 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
                 in_coverage = False
                 coverage_windows.append((window_start_time, t))
 
-        capacity_sum += capacity_this_step
-        capacity_count += 1
-
     if in_coverage and window_start_time is not None:
-        coverage_windows.append(
-            (window_start_time, visibility_by_time[-1][0])
-        )
+        coverage_windows.append((window_start_time, visibility_by_time[-1][0]))
 
-    total_seconds = sum((end - start).total_seconds() for start, end in coverage_windows)
-    coverage_percent = (total_seconds /(simulation_duration * 3600.0)) * 100.0
-    average_capacity = (capacity_sum / capacity_count if capacity_count > 0 else 0.0)
+    total_seconds = sum((end - start).total_seconds()for start, end in coverage_windows)
+    coverage_percent = (total_seconds / (simulation_duration * 3600.0)) * 100.0
+    average_capacity = (coverage_capacity_sum / coverage_capacity_count if coverage_capacity_count > 0 else 0.0)
 
     return {
         "coverage_percent": coverage_percent,
