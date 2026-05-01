@@ -1,6 +1,6 @@
 import os
 import requests
-from orbit.HelperFucntions.DTCfilter import is_DTC
+from orbit.HelperFucntions.DTCfilter import is_likely_dtc
 
 
 TLE_SOURCES = {
@@ -65,8 +65,9 @@ def parse_tles(lines, dtc_only=False):
             i += 3
 
         norad_id = int(line1[2:7])
+        inclination_deg = float(line2[8:16])
 
-        if dtc_only and not is_DTC(norad_id):
+        if dtc_only and not  is_likely_dtc(norad_id, inclination_deg):
             continue
 
         tles.append((name, line1, line2))

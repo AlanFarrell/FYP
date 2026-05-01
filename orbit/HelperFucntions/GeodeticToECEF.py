@@ -20,3 +20,11 @@ def LatLonToECEF(lat_deg, lon_deg, alt_m = 0.0):
     z = (N *(1-e2) + alt_m) * sinlat
 
     return x/1000, y/1000, z/1000
+
+def ecef_to_latlon(r_ecef):
+    x, y, z = r_ecef
+    r = sqrt(x*x + y*y + z*z)
+    lat = atan2(z, sqrt(x * x + y * y))
+    lon = atan2(y, x)
+
+    return degrees(lat), degrees(lon)

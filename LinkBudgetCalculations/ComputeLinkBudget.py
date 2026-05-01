@@ -10,9 +10,9 @@ def slant_range_m(satellite_ecef, observer_ecef):
 def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon):
 
     #PLACEHOLDER VALUES -> TO BE CHANGED
-    transmit_power_db = 46
-    receiver_gain_dbi = 33
-    frequency_hz = 19e9
+    transmit_power_db = 58
+    receiver_gain_dbi = 0
+    frequency_hz = 2e9
     interference_watts = 0.0
 
     if optimal_satellite is None:

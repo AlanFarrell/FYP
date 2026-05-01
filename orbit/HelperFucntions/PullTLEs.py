@@ -1,11 +1,12 @@
 import requests
 import os
-from orbit.HelperFucntions.DTCfilter import is_DTC
+from orbit.HelperFucntions.DTCfilter import is_likely_dtc
 
 
 def get_starlink_tles(dtc_only=False):
     url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
     tles = []
+
 
     try:
         response = requests.get(url, timeout=8)
@@ -27,9 +28,10 @@ def get_starlink_tles(dtc_only=False):
         line2 = lines[i+2].strip()
 
         norad_id = int(line1[2:7])
-
+        inclination_deg = float(line2[8:16])
         if dtc_only:
-            if is_DTC(norad_id):
+
+            if is_likely_dtc(norad_id, inclination_deg):
                 tles.append((name, line1, line2))
         else:
             tles.append((name, line1, line2))
