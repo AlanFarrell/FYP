@@ -19,7 +19,7 @@ def plot_ground_tracks():
     #tle_choice = "Kuiper"
 
     start_time = datetime(2026, 4, 23, 7, 0, tzinfo=timezone.utc)
-    simulation_duration_hours = 4
+    simulation_duration_hours = 1.5
     step_seconds =  30
 
     print("[INFO] Loading TLEs")
@@ -35,7 +35,7 @@ def plot_ground_tracks():
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
 
-    for satellite_name in list(propagated_satellites.keys())[:200]:
+    for satellite_name in list(propagated_satellites.keys()):
         lats, lons = [], []
 
         for entry in propagated_satellites[satellite_name]:
@@ -49,6 +49,6 @@ def plot_ground_tracks():
 
 
         ax.plot(lons, lats, linewidth=1, transform=ccrs.Geodetic())
-    plt.title(f"OneWeb Ground Tracks")
+    plt.title(f"Starlink DTC Ground Tracks")
     plt.tight_layout()
     plt.show()

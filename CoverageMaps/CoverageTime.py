@@ -13,9 +13,9 @@ from scipy.ndimage import gaussian_filter
 
 def coverage_mapping():
 
-    tle_choice = "Starlink (DTC Only)"
+    #tle_choice = "Starlink (DTC Only)"
     #tle_choice = "Starlink (All)"
-    #tle_choice = "OneWeb"
+    tle_choice = "OneWeb"
     #tle_choice = "Kuiper"
 
     print(f"[INFO] Loading TLEs for {tle_choice}")
@@ -24,7 +24,7 @@ def coverage_mapping():
 
     print("Propagating satellites...")
 
-    start_time = datetime(year=2026, month=4, day=23, hour=7, minute=0, second=0, tzinfo=timezone.utc)
+    start_time = datetime(year=2026, month=4, day=24, hour=7, minute=0, second=0, tzinfo=timezone.utc)
     propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["propagation_time_step"], start_time_utc=start_time)
     lats, lons, _ = generate_grid(simulation_params)
     coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
