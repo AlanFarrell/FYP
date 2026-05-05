@@ -12,8 +12,8 @@ def simulation_parameters(lat_lon_step = 1):
         "lon_min": -10.7,
         "lon_max": -5.5,
         "lat_lon_step": lat_lon_step,
-        "propagation_time_step": 20,
-        "simulation_duration_hours": 12,
+        "propagation_time_step": 30,
+        "simulation_duration_hours": 3,
     }
 
 #Make latitude/longitude grid
@@ -32,7 +32,7 @@ def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metr
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
             print(f"Checking coverage at ({lat}, {lon})")
-            coverage_statistic = checkForCoverage(lat, lon, propagated_data, simulation_duration)
+            coverage_statistic = checkForCoverage(lat, lon, propagated_data, simulation_duration, beamwidth=15)
 
             if metric == "coverage_percent":
                 coverage_grid[i, j] = coverage_statistic["coverage_percent"]

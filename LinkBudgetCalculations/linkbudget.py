@@ -41,9 +41,9 @@ class LinkBudgetCalculations:
     def free_space_path_loss(freq_hz: float, distance_m: float) -> float:
         return 20 * math.log10(distance_m) + 20 * math.log10(freq_hz) - 147.55
 
-    def received_power_watts(self, transmit_power_db, received_power_db, distance_m, freq_hz):
+    def received_power_watts(self, transmit_power_db, received_power_db, distance_m, freq_hz, other_losses_db: float = 0.0):
         fspl_db = self.free_space_path_loss(freq_hz, distance_m)
-        pr_dbw = transmit_power_db + received_power_db - fspl_db
+        pr_dbw = transmit_power_db + received_power_db - fspl_db - other_losses_db
         return 10 ** (pr_dbw / 10.0), fspl_db
 
     def noise_power(self) -> float:

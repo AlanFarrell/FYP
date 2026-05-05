@@ -14,8 +14,8 @@ from scipy.ndimage import gaussian_filter
 def coverage_mapping():
 
     #tle_choice = "Starlink (DTC Only)"
-    #tle_choice = "Starlink (All)"
-    tle_choice = "OneWeb"
+    tle_choice = "Starlink (All)"
+    #tle_choice = "OneWeb"
     #tle_choice = "Kuiper"
 
     print(f"[INFO] Loading TLEs for {tle_choice}")
