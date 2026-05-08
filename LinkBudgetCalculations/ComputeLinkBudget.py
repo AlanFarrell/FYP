@@ -27,7 +27,7 @@ def contention_model(capacity_mbps, num_users = None, method = "equal", sinr_db 
         raise ValueError("Invalid contention method")
 
 
-def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon, other_losses_db: float = 3.0):
+def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon, other_losses_db: float = 0.0):
 
     #PLACEHOLDER VALUES -> TO BE CHANGED
     transmit_power_db = 46
@@ -64,9 +64,14 @@ def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon, other_
     raw_capacity = results.capacity_mbps
 
     if USE_CONTENTION:
-        adjusted_capacity = contention_model(raw_capacity, num_users = NUM_USERS, method = CONTENTION_METHOD, sinr_db=results.sinr_db)
+        adjusted_capacity = contention_model(
+            raw_capacity,
+            num_users=NUM_USERS,
+            method=CONTENTION_METHOD,
+            sinr_db=results.sinr_db
+        )
     else:
-        adjusted_capacity = contention_model(raw_capacity, num_users = NUM_USERS)
+        adjusted_capacity = raw_capacity
 
     return {
         "capacity_mbps": adjusted_capacity,

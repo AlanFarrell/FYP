@@ -69,7 +69,6 @@ def parse_tles(lines, dtc_only=False):
 
         if dtc_only and not  is_likely_dtc(norad_id, inclination_deg):
             continue
-
         tles.append((name, line1, line2))
 
     return tles

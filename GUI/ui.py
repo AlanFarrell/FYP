@@ -40,7 +40,7 @@ elif grid_choice == "Medium (≈25 km)":
 elif grid_choice == "Fine (≈10 km)":
     grid_step = 0.1
 
-st.title("Starlink Coverage Demo – Ireland")
+st.title("LEO satellite Coverage Demo – Ireland")
 st.write("Use the slider below to visualize how Starlink coverage changes throughout the day.")
 
 if "started" not in st.session_state:
