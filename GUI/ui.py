@@ -49,7 +49,7 @@ if "started" not in st.session_state:
 if "coverage_cache" not in st.session_state:
     st.session_state["coverage_cache"] = {}
 
-sim_params = simulation_parameters(lat_lon_step=grid_step)
+sim_params = simulation_parameters()
 lats, lons, _ = generate_grid(sim_params)
 tle_choice = st.selectbox("select constellation", list(TLE_SOURCES.keys()))
 

@@ -1,4 +1,3 @@
-import numpy as np
 from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from orbit.isVisible import visibility_check
 from orbit.BeamWidth import BeamFilter

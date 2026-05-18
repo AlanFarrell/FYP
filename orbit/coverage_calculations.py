@@ -3,17 +3,17 @@ import matplotlib
 matplotlib.use("TkAgg")
 from orbit.CheckForCoverage import checkForCoverage
 
-#Generate config
 
-def simulation_parameters(lat_lon_step = 1):
+def simulation_parameters():
+    from config import SimulationConfig
     return {
-        "lat_min": 51.3,
-        "lat_max": 56.0,
-        "lon_min": -10.7,
-        "lon_max": -5.5,
-        "lat_lon_step": lat_lon_step,
-        "propagation_time_step": 30,
-        "simulation_duration_hours": 1,
+        "lat_min": SimulationConfig.LAT_MIN,
+        "lat_max": SimulationConfig.LAT_MAX,
+        "lon_min": SimulationConfig.LON_MIN,
+        "lon_max": SimulationConfig.LON_MAX,
+        "lat_lon_step": SimulationConfig.LAT_LON_STEP,
+        "propagation_time_step": SimulationConfig.PROPAGATION_TIME_STEP,
+        "simulation_duration_hours": SimulationConfig.SIMULATION_DURATION_HOURS,
     }
 
 #Make latitude/longitude grid
@@ -23,6 +23,7 @@ def generate_grid(grid_paramaters):
     grid = np.zeros((len(lats), len(lons)))
     return lats, lons, grid
 
+
 #Compute coverage for grid points
 def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metric = "coverage_percent"):
     coverage_grid = np.zeros((len(lats), len(lons)))
@@ -31,12 +32,14 @@ def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metr
 
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
-            print(f"Checking coverage at ({lat}, {lon})")
+
             coverage_statistic = checkForCoverage(lat, lon, propagated_data, simulation_duration, beamwidth=15)
 
             if metric == "coverage_percent":
+                print(f"Checking {metric} at ({lat}, {lon})")
                 coverage_grid[i, j] = coverage_statistic["coverage_percent"]
             elif metric == "coverage_capacity":
+                print(f"Checking {metric} at ({lat}, {lon})")
                 coverage_grid[i, j] = coverage_statistic["coverage_capacity"]
             else:
                 raise ValueError("Unknown Metric")
