@@ -12,8 +12,8 @@ def simulation_parameters(lat_lon_step = 1):
         "lon_min": -10.7,
         "lon_max": -5.5,
         "lat_lon_step": lat_lon_step,
-        "propagation_time_step": 20,
-        "simulation_duration_hours": 12,
+        "propagation_time_step": 30,
+        "simulation_duration_hours": 1,
     }
 
 #Make latitude/longitude grid

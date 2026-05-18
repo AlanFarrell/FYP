@@ -28,8 +28,6 @@ def contention_model(capacity_mbps, num_users = None, method = "equal", sinr_db 
 
 
 def compute_link_budget(optimal_satellite, interferers, jd, fr, lat, lon, other_losses_db: float = 0.0):
-
-    #PLACEHOLDER VALUES -> TO BE CHANGED
     transmit_power_db = 46
     receiver_gain_dbi = 33
     frequency_hz = 12e9

@@ -34,8 +34,6 @@ def checkCoverageSnapshot(lat, lon, propagatedSatellites, timestep_index, beamwi
     visible_satellites = []
     satellite_positions, satellite_names, jd, fr = precompute_satellite_data(propagatedSatellites, timestep_index)
     observer_ecef = np.array(LatLonToECEF(lat, lon, 0.0))
-    timeline_entry = next(iter(propagatedSatellites.values()))[timestep_index]
-    t = timeline_entry["time"]
 
     if len(satellite_positions) == 0:
         return {"coverage_percent": 0, "coverage_capacity": 0}

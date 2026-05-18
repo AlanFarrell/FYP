@@ -27,9 +27,9 @@ def coverage_mapping():
     start_time = datetime(year=2026, month=4, day=23, hour=7, minute=0, second=0, tzinfo=timezone.utc)
     propagated = quickPropagate(tle_data, simulation_params["simulation_duration_hours"], simulation_params["propagation_time_step"], start_time_utc=start_time)
     lats, lons, _ = generate_grid(simulation_params)
-    #coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
+    coverage_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_percent")
     capacity_grid = compute_coverage_grid(lats, lons, propagated, simulation_params["simulation_duration_hours"], metric="coverage_capacity")
-    #generate_heatmap(simulation_params, coverage_grid, title="Coverage Percentage Average Over Time", colourBarLabel="Coverage Time as percent")
+    generate_heatmap(simulation_params, coverage_grid, title="Coverage Percentage Average Over Time", colourBarLabel="Coverage Time as percent")
     generate_heatmap(simulation_params, capacity_grid, title="Coverage Capacity Average Over Time", colourBarLabel="Capacity (Mbps)")
 
 

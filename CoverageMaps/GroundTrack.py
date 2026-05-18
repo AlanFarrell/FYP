@@ -13,9 +13,9 @@ from orbit.HelperFucntions.GeodeticToECEF import ecef_to_latlon
 
 
 def plot_ground_tracks():
-    tle_choice = "Starlink (DTC Only)"
+    #tle_choice = "Starlink (DTC Only)"
     #tle_choice = "Starlink (All)"
-    #tle_choice = "OneWeb"
+    tle_choice = "OneWeb"
     #tle_choice = "Kuiper"
 
     start_time = datetime(2026, 4, 23, 7, 0, tzinfo=timezone.utc)
@@ -35,7 +35,7 @@ def plot_ground_tracks():
     ax.add_feature(cfeature.LAND, facecolor="lightgray")
     ax.add_feature(cfeature.OCEAN)
 
-    for satellite_name in list(propagated_satellites.keys()):
+    for satellite_name in list(propagated_satellites.keys())[:1000]:
         lats, lons = [], []
 
         for entry in propagated_satellites[satellite_name]:
