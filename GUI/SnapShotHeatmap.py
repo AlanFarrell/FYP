@@ -4,16 +4,18 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from scipy.ndimage import gaussian_filter
 
+from config import SimulationConfig
 
-def generate_cartopy_heatmap(sim_params, grid, title, colourBarLabel=None):
+
+def generate_cartopy_heatmap(grid, title, colourBarLabel=None):
     grid = gaussian_filter(grid, sigma=1.0)
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
     ax.set_extent([
-        sim_params["lon_min"], sim_params["lon_max"],
-        sim_params["lat_min"], sim_params["lat_max"]
+        SimulationConfig.LON_MIN, SimulationConfig.LON_MAX,
+        SimulationConfig.LAT_MIN, SimulationConfig.LAT_MAX,
     ])
 
     ax.coastlines(resolution="10m", linewidth=1)
@@ -24,8 +26,8 @@ def generate_cartopy_heatmap(sim_params, grid, title, colourBarLabel=None):
     vmin = np.percentile(grid, 5)
     vmax = np.percentile(grid, 95)
 
-    lon = np.linspace(sim_params["lon_min"], sim_params["lon_max"], grid.shape[1])
-    lat = np.linspace(sim_params["lat_min"], sim_params["lat_max"], grid.shape[0])
+    lon = np.linspace(SimulationConfig.LON_MIN, SimulationConfig.LON_MAX, grid.shape[1])
+    lat = np.linspace(SimulationConfig.LAT_MIN, SimulationConfig.LAT_MAX, grid.shape[0])
     Lon, Lat = np.meshgrid(lon, lat)
 
     img = ax.pcolormesh(

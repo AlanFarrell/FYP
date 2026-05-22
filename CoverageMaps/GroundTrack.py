@@ -18,14 +18,11 @@ def plot_ground_tracks():
     tle_choice = "OneWeb"
     #tle_choice = "Kuiper"
 
-    start_time = datetime(2026, 4, 23, 7, 0, tzinfo=timezone.utc)
-    simulation_duration_hours = 1.5
-    step_seconds =  30
 
     print("[INFO] Loading TLEs")
-    tles = get_tles(tle_choice)
+    TLEs = get_tles(tle_choice)
     print("[INFO] Propagating satellites")
-    propagated_satellites = quickPropagate(tles, simulation_duration_hours, step_seconds, start_time)
+    propagated_satellites = quickPropagate(TLEs)
 
     figure = plt.figure(figsize=(12,6))
     ax = plt.axes(projection=ccrs.PlateCarree())

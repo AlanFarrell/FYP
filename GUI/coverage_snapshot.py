@@ -30,7 +30,7 @@ def precompute_satellite_data(propagatedSatellites, timestep_index):
     return satellite_positions, satellite_names, jd, fr
 
 
-def checkCoverageSnapshot(lat, lon, propagatedSatellites, timestep_index, beamwidth=15.0):
+def checkCoverageSnapshot(lat, lon, propagatedSatellites, timestep_index):
     visible_satellites = []
     satellite_positions, satellite_names, jd, fr = precompute_satellite_data(propagatedSatellites, timestep_index)
     observer_ecef = np.array(LatLonToECEF(lat, lon, 0.0))
@@ -58,7 +58,7 @@ def checkCoverageSnapshot(lat, lon, propagatedSatellites, timestep_index, beamwi
             "elevation_degrees": elevation[visibility_mask][i]
         })
 
-    filtered_satellites, optimal_satellite = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0, beamwidth_deg=beamwidth)
+    filtered_satellites, optimal_satellite = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0)
 
     if not filtered_satellites:
         return {"coverage_percent": 0, "coverage_capacity": 0}

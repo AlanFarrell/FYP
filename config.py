@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 class LinkBudgetConfig:
     TRANSMIT_POWER_DB = 46
     RECEIVER_GAIN_DBI = 33
@@ -13,7 +15,11 @@ class SimulationConfig:
     LAT_LON_STEP = 0.5
 
     PROPAGATION_TIME_STEP = 60
-    SIMULATION_DURATION_HOURS = 1
+    SIMULATION_DURATION_HOURS = 2
+
+    SIMULATION_START = datetime(year=2026, month=5, day=19, hour=12, minute=0, second=0, tzinfo=timezone.utc)
+
+    BEAMWIDTH = 15.0
 
 
 class ContentionConfig:

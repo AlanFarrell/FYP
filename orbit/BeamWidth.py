@@ -2,11 +2,13 @@ import numpy as np
 from orbit.HelperFucntions.GeodeticToECEF import LatLonToECEF
 from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 
-def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt, beamwidth_deg):
+from config import SimulationConfig
+
+def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt):
     if len(sats) == 0:
         return [], None
 
-    half_angle = beamwidth_deg/2
+    half_angle = SimulationConfig.BEAMWIDTH/2
 
     #convert observer LatLon to ECEF then TEME
     observer_ecef = np.array(LatLonToECEF(obs_lat, obs_lon, obs_alt))

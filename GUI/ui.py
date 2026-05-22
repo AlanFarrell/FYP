@@ -10,13 +10,13 @@ matplotlib.use("Agg")
 
 from GUI.coverage_snapshot import checkCoverageSnapshot
 from orbit.QuickPropagate import quickPropagate
-from orbit.coverage_calculations import simulation_parameters, generate_grid
+from orbit.coverage_calculations import generate_grid
 from GUI.SnapShotHeatmap import generate_cartopy_heatmap
 from orbit.HelperFucntions.TLELoader import get_tles, TLE_SOURCES
 
 @st.cache_data
 def propagate_full_day(tle_data):
-    return quickPropagate(tle_data, duration=24, step=300)
+    return quickPropagate(tle_data)
 
 
 def compute_cells(args):
@@ -49,8 +49,7 @@ if "started" not in st.session_state:
 if "coverage_cache" not in st.session_state:
     st.session_state["coverage_cache"] = {}
 
-sim_params = simulation_parameters()
-lats, lons, _ = generate_grid(sim_params)
+lats, lons, _ = generate_grid()
 tle_choice = st.selectbox("select constellation", list(TLE_SOURCES.keys()))
 
 #OPTIMISATION FEATURE
@@ -109,8 +108,5 @@ if st.session_state["started"]:
         st.session_state["coverage_cache"][timestep] = (coverage_grid, capacity_grid)
 
     coverage_grid, capacity_grid = st.session_state["coverage_cache"][timestep]
-    fig1 = generate_cartopy_heatmap(sim_params, coverage_grid, title=f"Coverage Percentage at {selected_dt.strftime('%H:%M:%S UTC')}", colourBarLabel="Coverage (%)")
-    fig2 = generate_cartopy_heatmap(sim_params, capacity_grid, title=f"Capacity at {selected_dt.strftime('%H:%M:%S UTC')}", colourBarLabel="Capacity (Mbps)")
-
-    st.pyplot(fig1)
+    fig2 = generate_cartopy_heatmap(capacity_grid, title=f"Capacity at {selected_dt.strftime('%H:%M:%S UTC')}", colourBarLabel="Capacity (Mbps)")
     st.pyplot(fig2)

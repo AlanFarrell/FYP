@@ -2,6 +2,7 @@ from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from orbit.isVisible import visibility_check
 from orbit.BeamWidth import BeamFilter
 from LinkBudgetCalculations.ComputeLinkBudget import compute_link_budget
+from config import SimulationConfig
 
 
 def precompute_data(propagated_satellites, lat, lon, timestep_indices=None):
@@ -37,7 +38,7 @@ def precompute_data(propagated_satellites, lat, lon, timestep_indices=None):
     return visibility_at_time
 
 
-def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwidth=15.0, time_step_index=None):
+def checkForCoverage(lat, lon, propagatedSatellites, time_step_index=None):
     coverage_capacity_sum = 0.0
     coverage_capacity_count = 0
     coverage_windows = []
@@ -53,7 +54,7 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
         jd, fr = GetJulianDate(t)
 
         if visible_satellites:
-            filtered, optimal = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0, beamwidth_deg=beamwidth)
+            filtered, optimal = BeamFilter(visible_satellites, jd, fr, lat, lon, obs_alt=0.0)
         else:
             filtered = False
 
@@ -75,7 +76,7 @@ def checkForCoverage(lat, lon, propagatedSatellites, simulation_duration, beamwi
         coverage_windows.append((window_start_time, visibility_by_time[-1][0]))
 
     total_seconds = sum((end - start).total_seconds()for start, end in coverage_windows)
-    coverage_percent = (total_seconds / (simulation_duration * 3600.0)) * 100.0
+    coverage_percent = (total_seconds / (SimulationConfig.SIMULATION_DURATION_HOURS * 3600.0)) * 100.0
     average_capacity = (coverage_capacity_sum / coverage_capacity_count if coverage_capacity_count > 0 else 0.0)
 
     return {

@@ -1,9 +1,10 @@
 from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from sgp4.api import Satrec
 from datetime import datetime, timedelta, timezone
+from config import SimulationConfig
 
 
-def quickPropagate(TLEs, duration, step, start_time_utc=None):
+def quickPropagate(TLEs):
     """
     Propagate all satellites from TLEs for a given duration.
 
@@ -22,16 +23,11 @@ def quickPropagate(TLEs, duration, step, start_time_utc=None):
         for name, line1, line2 in TLEs
     ]
 
-    if start_time_utc is None:
-        start_time_utc = datetime.now(timezone.utc)
-    elif start_time_utc.tzinfo is None:
-        raise ValueError("start_time_utc must be timezone-aware (UTC)")
-
-    end_time = start_time_utc + timedelta(hours=duration)
-    step_td = timedelta(seconds=step)
+    end_time = SimulationConfig.SIMULATION_START + timedelta(hours=SimulationConfig.SIMULATION_DURATION_HOURS)
+    step_td = timedelta(seconds=SimulationConfig.PROPAGATION_TIME_STEP)
     propagated = {name: [] for name, _ in satellites}
 
-    current_time = start_time_utc
+    current_time = SimulationConfig.SIMULATION_START
     while current_time < end_time:
         jd, fr = GetJulianDate(current_time)
 

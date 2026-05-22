@@ -2,30 +2,18 @@ import numpy as np
 import matplotlib
 matplotlib.use("TkAgg")
 from orbit.CheckForCoverage import checkForCoverage
-
-
-def simulation_parameters():
-    from config import SimulationConfig
-    return {
-        "lat_min": SimulationConfig.LAT_MIN,
-        "lat_max": SimulationConfig.LAT_MAX,
-        "lon_min": SimulationConfig.LON_MIN,
-        "lon_max": SimulationConfig.LON_MAX,
-        "lat_lon_step": SimulationConfig.LAT_LON_STEP,
-        "propagation_time_step": SimulationConfig.PROPAGATION_TIME_STEP,
-        "simulation_duration_hours": SimulationConfig.SIMULATION_DURATION_HOURS,
-    }
+from config import SimulationConfig
 
 #Make latitude/longitude grid
-def generate_grid(grid_paramaters):
-    lats = np.arange(grid_paramaters["lat_min"], grid_paramaters["lat_max"], grid_paramaters["lat_lon_step"])
-    lons = np.arange(grid_paramaters["lon_min"], grid_paramaters["lon_max"], grid_paramaters["lat_lon_step"])
+def generate_grid():
+    lats = np.arange(SimulationConfig.LAT_MIN, SimulationConfig.LAT_MAX, SimulationConfig.LAT_LON_STEP)
+    lons = np.arange(SimulationConfig.LON_MIN, SimulationConfig.LON_MAX, SimulationConfig.LAT_LON_STEP)
     grid = np.zeros((len(lats), len(lons)))
     return lats, lons, grid
 
 
 #Compute coverage for grid points
-def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metric = "coverage_percent"):
+def compute_coverage_grid(lats, lons, propagated_data, metric = "coverage_percent"):
     coverage_grid = np.zeros((len(lats), len(lons)))
 
     print(f"Computing coverage for {metric}")
@@ -33,7 +21,7 @@ def compute_coverage_grid(lats, lons, propagated_data, simulation_duration, metr
     for i, lat in enumerate(lats):
         for j, lon in enumerate(lons):
 
-            coverage_statistic = checkForCoverage(lat, lon, propagated_data, simulation_duration, beamwidth=15)
+            coverage_statistic = checkForCoverage(lat, lon, propagated_data)
 
             if metric == "coverage_percent":
                 print(f"Checking {metric} at ({lat}, {lon})")
