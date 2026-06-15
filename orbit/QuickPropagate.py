@@ -1,22 +1,11 @@
 from orbit.HelperFucntions.GetJulianDate import GetJulianDate
 from sgp4.api import Satrec
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from config import SimulationConfig
 
+from orbit.HelperFucntions.TEMEtoECEF import teme_to_ecef
 
 def quickPropagate(TLEs):
-    """
-    Propagate all satellites from TLEs for a given duration.
-
-    -------
-    dict
-        {
-            "sat_name": [
-                {"time": datetime, "r": (x,y,z)},
-                ...
-            ]
-        }
-    """
 
     satellites = [
         (name.strip(), Satrec.twoline2rv(line1.strip(), line2.strip()))
@@ -30,14 +19,13 @@ def quickPropagate(TLEs):
     current_time = SimulationConfig.SIMULATION_START
     while current_time < end_time:
         jd, fr = GetJulianDate(current_time)
+        timestamp = current_time.timestamp()
 
         for name, sat in satellites:
             e, r, v = sat.sgp4(jd, fr)
             if e == 0:
-                propagated[name].append({
-                    "time": current_time,
-                    "r": r,
-                })
+                satellite_x, satellite_y, satellite_z, = teme_to_ecef(r, jd, fr)
+                propagated[name].append((timestamp, satellite_x, satellite_y, satellite_z))
 
         current_time += step_td
 

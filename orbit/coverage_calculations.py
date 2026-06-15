@@ -1,4 +1,7 @@
 import numpy as np
+from multiprocessing.dummy import Pool
+from os import cpu_count
+
 import matplotlib
 matplotlib.use("TkAgg")
 from orbit.CheckForCoverage import checkForCoverage
@@ -11,25 +14,32 @@ def generate_grid():
     grid = np.zeros((len(lats), len(lons)))
     return lats, lons, grid
 
+def compute_point(args):
+    lat, lon, propagated_satellites, metric = args
+    coverage_point_stats = checkForCoverage(lat, lon, propagated_satellites)
+
+    if metric == "coverage_percent":
+        print(f"Checking {metric} at ({lat}, {lon})")
+        return coverage_point_stats["coverage_percent"]
+    elif metric == "coverage_capacity":
+        print(f"Checking {metric} at ({lat}, {lon})")
+        return coverage_point_stats["coverage_capacity"]
+
+
 
 #Compute coverage for grid points
 def compute_coverage_grid(lats, lons, propagated_data, metric = "coverage_percent"):
-    coverage_grid = np.zeros((len(lats), len(lons)))
 
-    print(f"Computing coverage for {metric}")
+    tasks = [
+        (lat, lon, propagated_data, metric)
+        for lat in lats
+        for lon in lons
+    ]
 
-    for i, lat in enumerate(lats):
-        for j, lon in enumerate(lons):
+    with Pool(cpu_count()) as pool:
+        results = pool.map(compute_point, tasks)
 
-            coverage_statistic = checkForCoverage(lat, lon, propagated_data)
+    coverage_grid = np.array(results).reshape(len(lats), len(lons))
 
-            if metric == "coverage_percent":
-                print(f"Checking {metric} at ({lat}, {lon})")
-                coverage_grid[i, j] = coverage_statistic["coverage_percent"]
-            elif metric == "coverage_capacity":
-                print(f"Checking {metric} at ({lat}, {lon})")
-                coverage_grid[i, j] = coverage_statistic["coverage_capacity"]
-            else:
-                raise ValueError("Unknown Metric")
 
     return coverage_grid

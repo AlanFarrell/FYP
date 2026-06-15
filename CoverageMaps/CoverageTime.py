@@ -2,7 +2,7 @@ from orbit.coverage_calculations import compute_coverage_grid, generate_grid
 from orbit.QuickPropagate import quickPropagate
 from orbit.HelperFucntions.TLELoader import get_tles
 from CoverageMaps.GenerateHeatMap import generate_heatmap
-from config import TLEoption, SimulationConfig
+from config import TLEoption
 
 def coverage_mapping():
     tle_choice = TLEoption.tle_choice

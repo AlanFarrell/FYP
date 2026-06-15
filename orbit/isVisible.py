@@ -3,13 +3,11 @@ from orbit.HelperFucntions.TEMEtoECEF import teme_to_ecef
 from orbit.HelperFucntions.LineOfSight import ecef_los_to_levation
 from orbit.HelperFucntions.LineOfSight import MASK_ANGLE_DEG
 
-def visibility_check(r_teme, jd, fr, lat, lon, alt_m = 0.0):
+def visibility_check(r_ecef, g_ecef, lat, lon):
 
-    #converting satellite TEME to ECEF
-    sx, sy, sz = teme_to_ecef(r_teme, jd, fr)
 
-    #putting ground location into EFEC
-    gx, gy, gz = LatLonToECEF(lat, lon, alt_m)
+    sx, sy, sz = r_ecef
+    gx, gy, gz = g_ecef
 
     #LOS in ecef
     dx = sx - gx

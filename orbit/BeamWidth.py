@@ -4,33 +4,23 @@ from orbit.HelperFucntions.gstime_vallado import gstime_vallado
 
 from config import SimulationConfig
 
-def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt):
-    if len(sats) == 0:
+def BeamFilter(propagated_satellites, obs_lat, obs_lon, obs_alt):
+    if len(propagated_satellites) == 0:
         return [], None
 
     half_angle = SimulationConfig.BEAMWIDTH/2
 
     #convert observer LatLon to ECEF then TEME
     observer_ecef = np.array(LatLonToECEF(obs_lat, obs_lon, obs_alt))
-    gmst = gstime_vallado(jd + fr)
 
-    ct, st = np.cos(gmst), np.sin(gmst)
-
-    rotation_matrix = np.array([
-        [ct, -st, 0.0],
-        [st, ct, 0.0],
-        [0.0, 0.0, 1.0]
-    ])
-
-    observer_teme = rotation_matrix @ observer_ecef
-    satellite_positions = np.array([s["position_km"] for s in sats])
+    satellite_positions = np.array([s["position_km"] for s in propagated_satellites])
 
     #compute beam unit vectors
     satellite_normalised = np.linalg.norm(satellite_positions, axis=1, keepdims=True)
     u_beam = -satellite_positions / satellite_normalised
 
     #line of sight vectors
-    v_los = observer_teme - satellite_positions
+    v_los = observer_ecef - satellite_positions
     v_los_normalised = np.linalg.norm(v_los, axis=1, keepdims=True)
     u_los = v_los / v_los_normalised
 
@@ -40,7 +30,7 @@ def BeamFilter(sats, jd, fr, obs_lat, obs_lon, obs_alt):
 
     theta = np.degrees(np.arccos(cosang))
     keep_mask = theta <= half_angle
-    satellites_array = np.array(sats, dtype=object)
+    satellites_array = np.array(propagated_satellites, dtype=object)
 
     if not np.any(keep_mask):
         return [], None
