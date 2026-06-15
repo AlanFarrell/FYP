@@ -10,7 +10,7 @@ from config import TLEoption
 
 
 def plot_ground_tracks():
-    tle_choice = TLEoption.tle_choice
+    tle_choice = "Kuiper"
 
     print("[INFO] Loading TLEs")
     TLEs = get_tles(tle_choice)
@@ -40,7 +40,7 @@ def plot_ground_tracks():
 )
 
 
-    for satellite_name in list(propagated_satellites.keys())[1100:1800]:
+    for satellite_name in list(propagated_satellites.keys())[:]:
         lats, lons = [], []
 
         for entry in propagated_satellites[satellite_name]:

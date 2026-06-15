@@ -14,8 +14,8 @@ class SimulationConfig:
     LON_MAX = -5.5
     LAT_LON_STEP = 0.5
 
-    PROPAGATION_TIME_STEP = 120
-    SIMULATION_DURATION_HOURS = 1.5
+    PROPAGATION_TIME_STEP = 20
+    SIMULATION_DURATION_HOURS = 1
 
     SIMULATION_START = datetime(year=2026, month=5, day=19, hour=12, minute=0, second=0, tzinfo=timezone.utc)
 
@@ -36,4 +36,4 @@ class TLEoption:
         "Kuiper"
     ]
 
-    tle_choice = "Starlink (All)"
+    tle_choice = "Kuiper"
